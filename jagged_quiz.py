@@ -341,28 +341,69 @@ if "page" not in st.session_state:
 # --- 3. Quiz page function ---
 def show_quiz():
     """Displays the quiz questions and a submit button."""
-    st.title("Jagged Learning Profile Quiz")
-    st.write("Select the option that best describes you for each statement (1 = Disagree, 5 = Strongly Agree).")
+    # Custom CSS for a more dynamic and colorful title
+    st.markdown("""
+        <style>
+        .title-container {
+            text-align: center;
+            padding: 20px;
+            background-color: #F0F2F6;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        .jagged-title {
+            color: #4CAF50;
+            font-size: 3em;
+            font-weight: bold;
+        }
+        .quiz-description {
+            color: #333;
+            font-size: 1.2em;
+        }
+        </style>
+        <div class="title-container">
+            <h1 class="jagged-title">Jagged Learning Profile Quiz 🧠</h1>
+            <p class="quiz-description">Find your unique strengths and see what makes you stand out!</p>
+        </div>
+    """, unsafe_allow_html=True)
+    st.write("---")
+
+    # Calculate the number of questions answered
+    answered_count = len([r for r in st.session_state.responses.values() if r is not None])
+    total_questions = len(st.session_state.randomized_questions)
+    progress_percentage = answered_count / total_questions
+    st.progress(progress_percentage)
+    st.markdown(f"**Progress:** {answered_count}/{total_questions} questions answered.")
 
     # Use a unique key for each question based on its content, not its index
     for q_data in st.session_state.randomized_questions:
         question_text = q_data["question"]
         st.session_state.responses[question_text] = st.radio(
             question_text,
-            options=[1, 2, 3, 4, 5],
-            index=st.session_state.responses.get(question_text, 3) - 1,
+            options=["1 - 😞", "2 - 😐", "3 - 👍", "4 - 😄", "5 - 😎"],
+            index=None,  # No default selection
             key=question_text,
             horizontal=True # Display radio buttons horizontally for better layout
         )
 
     st.markdown("---")
-    if st.button("Submit Quiz"):
-        st.session_state.page = "results"
+    # Only allow submission if all questions have been answered
+    if answered_count == total_questions:
+        if st.button("Submit Quiz", type="primary"):
+            st.session_state.page = "results"
+    else:
+        st.warning("Please answer all questions before submitting.")
+
 
 # --- 4. Results page function ---
 def show_results():
     """Calculates scores and displays the results page with a radar chart and table."""
-    st.title("Your Jagged Learning Profile")
+    st.markdown("""
+        <div style="text-align: center; padding: 20px; background-color: #F0F2F6; border-radius: 10px; margin-bottom: 30px;">
+            <h1 style="color: #4CAF50; font-size: 3em; font-weight: bold;">Your Jagged Learning Profile 🚀</h1>
+        </div>
+    """, unsafe_allow_html=True)
+    st.write("---")
 
     # Initialize scores and maximum possible scores for all dimensions to zero
     scores = {dim: 0 for dim in DIMENSIONS}
@@ -374,8 +415,8 @@ def show_results():
         primary_dim = q_data["primary_dimension"]
         secondary_weights = q_data["secondary_weights"]
 
-        # Safely get the response, defaulting to 3 if not found
-        response = st.session_state.responses.get(question_text, 3)
+        # Extract integer value from emoji-enhanced radio button selection
+        response = int(st.session_state.responses[question_text].split(' ')[0])
 
         # Apply scoring for primary dimension
         scores[primary_dim] += response
