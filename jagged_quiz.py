@@ -1,137 +1,175 @@
+# jagged_quiz_app.py
+
 import streamlit as st
 import pandas as pd
 import random
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Student Learning & Interest Quiz", layout="wide")
+st.set_page_config(page_title="Jagged Learning Profile Quiz", layout="wide")
 
-# --- Questions & Dimensions ---
-questions = [
-    ("I enjoy observing animals, plants, or natural environments.", "Nature & Environment"),
-    ("I’m curious about how ecosystems and the Earth work.", "Nature & Environment"),
-    ("I feel motivated to protect nature and wildlife.", "Nature & Environment"),
-    ("I enjoy learning about environmental problems and solutions.", "Nature & Environment"),
-    
-    ("I enjoy solving challenging puzzles or logic problems.", "Numbers & Logic"),
-    ("I like spotting patterns or trends in numbers and data.", "Numbers & Logic"),
-    ("I feel confident analyzing information to make decisions.", "Numbers & Logic"),
-    ("I enjoy games or activities that require careful planning.", "Numbers & Logic"),
-    
-    ("I enjoy writing stories, articles, or creative pieces.", "Words & Communication"),
-    ("I like explaining ideas so others can understand them.", "Words & Communication"),
-    ("I’m interested in how language influences people.", "Words & Communication"),
-    ("I enjoy sharing my thoughts through speeches, blogs, or media.", "Words & Communication"),
-    
-    ("I like helping people overcome challenges or learn new skills.", "People & Community"),
-    ("I enjoy working with others to reach a shared goal.", "People & Community"),
-    ("I’m interested in understanding how people think and feel.", "People & Community"),
-    ("I feel motivated to make a positive difference in my community.", "People & Community"),
-    
-    ("I enjoy designing or creating objects or systems.", "Making & Building"),
-    ("I like improving or fixing things to make them work better.", "Making & Building"),
-    ("I feel proud when I build or complete something with my hands.", "Making & Building"),
-    ("I enjoy experimenting with ideas to create new things.", "Making & Building"),
-    
-    ("I enjoy physical activities that challenge my body.", "Movement & Health"),
-    ("I’m interested in learning how the body works and stays healthy.", "Movement & Health"),
-    ("I like setting goals to improve my fitness or skills.", "Movement & Health"),
-    ("I feel energized by sports, dance, or other active challenges.", "Movement & Health"),
-    
-    ("I enjoy creating art, music, or performance projects.", "Arts & Creativity"),
-    ("I like coming up with original ideas or new ways of doing things.", "Arts & Creativity"),
-    ("I enjoy experimenting with styles, colors, or artistic techniques.", "Arts & Creativity"),
-    ("I feel inspired when imagining or designing something new.", "Arts & Creativity"),
-    
-    ("I enjoy learning how technology, gadgets, or software work.", "Technology & Innovation"),
-    ("I like thinking of ways technology could solve real problems.", "Technology & Innovation"),
-    ("I enjoy experimenting with coding, robotics, or digital tools.", "Technology & Innovation"),
-    ("I’m curious about inventing or improving technological solutions.", "Technology & Innovation"),
+# -----------------------------
+# 1. Define questions with weights
+# -----------------------------
+questions_data = [
+    # Format: (question_text, primary_dimension, {secondary_dimension: weight})
+    # Nature & Environment
+    ("I enjoy observing animals, plants, or natural environments.", "Nature & Environment", {"Scientific Curiosity": 0.4}),
+    ("I am curious about how ecosystems and the Earth work.", "Nature & Environment", {"Scientific Curiosity": 0.4}),
+    ("I like learning about environmental problems and ways to solve them.", "Nature & Environment", {"Critical & Reflective Thinking": 0.3}),
+    ("I feel motivated to protect nature or wildlife.", "Nature & Environment", {"Emotional & Social Intelligence": 0.3}),
+    # Numbers & Logic
+    ("I enjoy solving puzzles or logic problems.", "Numbers & Logic", {"Critical & Reflective Thinking": 0.4}),
+    ("I like spotting patterns or trends in numbers or data.", "Numbers & Logic", {"Scientific Curiosity": 0.4}),
+    ("I feel confident analyzing information to make decisions.", "Numbers & Logic", {"Critical & Reflective Thinking": 0.5}),
+    ("I enjoy planning and strategizing in games or projects.", "Numbers & Logic", {"Entrepreneurship & Initiative": 0.3}),
+    # Words & Communication
+    ("I enjoy writing stories, essays, or articles.", "Words & Communication", {"Arts & Creativity": 0.4}),
+    ("I like explaining ideas clearly so others understand them.", "Words & Communication", {"Emotional & Social Intelligence": 0.3}),
+    ("I am interested in how words and language influence people.", "Words & Communication", {"Critical & Reflective Thinking": 0.3}),
+    ("I enjoy sharing my ideas through speeches, blogs, or media.", "Words & Communication", {"Digital Media & Creativity": 0.4}),
+    # People & Community
+    ("I enjoy helping others overcome challenges or learn new skills.", "People & Community", {"Emotional & Social Intelligence": 0.5}),
+    ("I like working collaboratively to achieve a shared goal.", "People & Community", {"Collaborative & Leadership Skills": 0.4}),
+    ("I am curious about understanding how people think and feel.", "People & Community", {"Emotional & Social Intelligence": 0.5}),
+    ("I feel motivated to make a positive difference in my community.", "People & Community", {"Mindfulness & Wellbeing": 0.3}),
+    # Making & Building
+    ("I enjoy designing or creating objects or systems.", "Making & Building", {"Technology & Innovation": 0.4}),
+    ("I like improving or fixing things to make them work better.", "Making & Building", {"Critical & Reflective Thinking": 0.3}),
+    ("I feel proud when I complete a hands-on project.", "Making & Building", {"Mindfulness & Wellbeing": 0.3}),
+    ("I enjoy experimenting with ideas to create new things.", "Making & Building", {"Entrepreneurship & Initiative": 0.4}),
+    # Movement & Health
+    ("I enjoy physical activities that challenge my body.", "Movement & Health", {"Mindfulness & Wellbeing": 0.3}),
+    ("I am interested in learning how the body works and stays healthy.", "Movement & Health", {"Scientific Curiosity": 0.3}),
+    ("I like setting goals to improve my fitness or skills.", "Movement & Health", {"Mindfulness & Wellbeing": 0.4}),
+    ("I feel energized by sports, dance, or other active challenges.", "Movement & Health", {"Emotional & Social Intelligence": 0.3}),
+    # Arts & Creativity
+    ("I enjoy creating art, music, or performance projects.", "Arts & Creativity", {"Digital Media & Creativity": 0.4}),
+    ("I like coming up with original ideas or new ways of doing things.", "Arts & Creativity", {"Entrepreneurship & Initiative": 0.4}),
+    ("I enjoy experimenting with styles, colors, or artistic techniques.", "Arts & Creativity", {"Critical & Reflective Thinking": 0.3}),
+    ("I feel inspired when imagining or designing something new.", "Arts & Creativity", {"Mindfulness & Wellbeing": 0.3}),
+    # Technology & Innovation
+    ("I enjoy learning how technology, gadgets, or software work.", "Technology & Innovation", {"Scientific Curiosity": 0.4}),
+    ("I like thinking of ways technology can solve real problems.", "Technology & Innovation", {"Entrepreneurship & Initiative": 0.4}),
+    ("I enjoy experimenting with coding, robotics, or digital tools.", "Technology & Innovation", {"Digital Media & Creativity": 0.4}),
+    ("I am curious about inventing or improving technological solutions.", "Technology & Innovation", {"Critical & Reflective Thinking": 0.3}),
+    # Entrepreneurship & Initiative
+    ("I enjoy creating projects or small ventures from an idea.", "Entrepreneurship & Initiative", {"Critical & Reflective Thinking": 0.3}),
+    ("I like taking the lead in solving challenges or making improvements.", "Entrepreneurship & Initiative", {"Collaborative & Leadership Skills": 0.4}),
+    ("I feel motivated to try new approaches or take calculated risks.", "Entrepreneurship & Initiative", {"Mindfulness & Wellbeing": 0.3}),
+    ("I enjoy finding creative solutions to everyday problems.", "Entrepreneurship & Initiative", {"Critical & Reflective Thinking": 0.4}),
+    # Critical & Reflective Thinking
+    ("I enjoy analyzing why things work the way they do.", "Critical & Reflective Thinking", {"Scientific Curiosity": 0.4}),
+    ("I like questioning assumptions to better understand a topic.", "Critical & Reflective Thinking", {"Numbers & Logic": 0.3}),
+    ("I enjoy comparing different viewpoints before forming an opinion.", "Critical & Reflective Thinking", {"Emotional & Social Intelligence": 0.3}),
+    ("I reflect on my decisions to see how I could improve them.", "Critical & Reflective Thinking", {"Mindfulness & Wellbeing": 0.4}),
+    # Emotional & Social Intelligence
+    ("I notice how my actions affect other people.", "Emotional & Social Intelligence", {"People & Community": 0.4}),
+    ("I enjoy helping friends solve personal or emotional challenges.", "Emotional & Social Intelligence", {"People & Community": 0.5}),
+    ("I can understand someone else’s perspective easily.", "Emotional & Social Intelligence", {"Critical & Reflective Thinking": 0.3}),
+    ("I am aware of my feelings and can manage them well.", "Emotional & Social Intelligence", {"Mindfulness & Wellbeing": 0.4}),
+    # Digital Media & Creativity
+    ("I enjoy creating videos, music, or digital artwork.", "Digital Media & Creativity", {"Arts & Creativity": 0.4}),
+    ("I like experimenting with apps or tools to express myself creatively.", "Digital Media & Creativity", {"Technology & Innovation": 0.4}),
+    ("I am interested in designing or editing digital content.", "Digital Media & Creativity", {"Entrepreneurship & Initiative": 0.3}),
+    ("I enjoy combining technology and imagination to make something new.", "Digital Media & Creativity", {"Critical & Reflective Thinking": 0.3}),
+    # Scientific Curiosity
+    ("I enjoy designing experiments to see what happens.", "Scientific Curiosity", {"Critical & Reflective Thinking": 0.4}),
+    ("I ask questions to understand how things in nature or science work.", "Scientific Curiosity", {"Nature & Environment": 0.4}),
+    ("I enjoy observing phenomena carefully and recording what I see.", "Scientific Curiosity", {"Critical & Reflective Thinking": 0.3}),
+    ("I like testing ideas to see if they really work.", "Scientific Curiosity", {"Entrepreneurship & Initiative": 0.3}),
+    # Collaborative & Leadership Skills
+    ("I enjoy organizing group activities or projects.", "Collaborative & Leadership Skills", {"People & Community": 0.4}),
+    ("I like guiding others to achieve a shared goal.", "Collaborative & Leadership Skills", {"Entrepreneurship & Initiative": 0.3}),
+    ("I feel confident taking responsibility for team decisions.", "Collaborative & Leadership Skills", {"Mindfulness & Wellbeing": 0.3}),
+    ("I enjoy helping a group work together smoothly.", "Collaborative & Leadership Skills", {"Emotional & Social Intelligence": 0.4}),
+    # Mindfulness & Wellbeing
+    ("I enjoy practicing mindfulness or reflecting on my feelings.", "Mindfulness & Wellbeing", {"Emotional & Social Intelligence": 0.4}),
+    ("I pay attention to my wellbeing and daily habits.", "Mindfulness & Wellbeing", {"Movement & Health": 0.4}),
+    ("I can stay focused and calm even in challenging situations.", "Mindfulness & Wellbeing", {"Critical & Reflective Thinking": 0.3}),
+    ("I take time to think about my strengths and areas I want to improve.", "Mindfulness & Wellbeing", {"Critical & Reflective Thinking": 0.4}),
 ]
 
-dimensions = ["Nature & Environment", "Numbers & Logic", "Words & Communication",
-              "People & Community", "Making & Building", "Movement & Health",
-              "Arts & Creativity", "Technology & Innovation"]
+# List of all dimensions
+dimensions = [
+    "Nature & Environment", "Numbers & Logic", "Words & Communication", "People & Community",
+    "Making & Building", "Movement & Health", "Arts & Creativity", "Technology & Innovation",
+    "Entrepreneurship & Initiative", "Critical & Reflective Thinking", "Emotional & Social Intelligence",
+    "Digital Media & Creativity", "Scientific Curiosity", "Collaborative & Leadership Skills",
+    "Mindfulness & Wellbeing"
+]
 
-career_suggestions = {
-    "Nature & Environment": "Environmental Science, Ecology, Conservation",
-    "Numbers & Logic": "Mathematics, Data Science, Engineering",
-    "Words & Communication": "Journalism, Writing, Communications",
-    "People & Community": "Psychology, Education, Social Work",
-    "Making & Building": "Architecture, Product Design, Engineering",
-    "Movement & Health": "Sports Science, Physiotherapy, Health Sciences",
-    "Arts & Creativity": "Fine Arts, Graphic Design, Music, Theatre",
-    "Technology & Innovation": "Computer Science, Robotics, UX/UI Design"
-}
-
-# --- Initialize session state ---
-if "responses" not in st.session_state:
-    st.session_state.responses = []
-if "shuffled_questions" not in st.session_state:
-    st.session_state.shuffled_questions = random.sample(questions, len(questions))
+# -----------------------------
+# 2. Streamlit quiz page
+# -----------------------------
 if "page" not in st.session_state:
     st.session_state.page = "quiz"
+    st.session_state.responses = {}
 
-# --- Navigation ---
-def go_to_results():
-    st.session_state.page = "results"
+def show_quiz():
+    st.title("Jagged Learning Profile Quiz")
+    st.write("Select the option that best describes you for each statement (1 = Disagree, 5 = Strongly Agree).")
 
-def go_to_quiz():
-    st.session_state.page = "quiz"
-    st.session_state.responses = []
-    st.session_state.shuffled_questions = random.sample(questions, len(questions))
+    # Randomize questions
+    randomized_questions = questions_data.copy()
+    random.shuffle(randomized_questions)
 
-# --- Quiz Page ---
-if st.session_state.page == "quiz":
-    st.title("Student Learning & Interest Quiz (12-16)")
-    st.subheader("Please rate each statement (1 = Disagree, 5 = Strongly Agree)")
-    
-    st.session_state.responses = []
-    for q_text, _ in st.session_state.shuffled_questions:
-        response = st.radio(q_text, [1,2,3,4,5], index=2, horizontal=True)
-        st.session_state.responses.append(response)
-    
-    st.button("Submit Quiz", on_click=go_to_results)
-    st.button("Clear All Responses", on_click=go_to_quiz)
+    for idx, (question, _, _) in enumerate(randomized_questions):
+        key = f"q_{idx}"
+        st.session_state.responses[key] = st.radio(
+            question, options=[1,2,3,4,5],
+            index=st.session_state.responses.get(key, 0)-1 if st.session_state.responses.get(key) else 2,
+            key=key
+        )
 
-# --- Results Page ---
-if st.session_state.page == "results":
-    st.title("Your Quiz Results")
-    
-    # Calculate scores
-    scores = {dim:0 for dim in dimensions}
-    for resp, (_, dim) in zip(st.session_state.responses, st.session_state.shuffled_questions):
-        scores[dim] += resp
-    
-    profile_df = pd.DataFrame({"Dimension": list(scores.keys()), "Score": list(scores.values())})
-    st.subheader("Jagged Profile")
-    st.dataframe(profile_df)
-    
-    # Radar chart with Plotly
-    categories = list(scores.keys())
-    values = list(scores.values())
-    values += values[:1]  # close the loop
+    if st.button("Submit Quiz"):
+        st.session_state.page = "results"
 
+def show_results():
+    st.title("Your Jagged Learning Profile")
+
+    # Initialize scores
+    scores = {dim: 0 for dim in dimensions}
+
+    # Apply weighted scoring
+    for idx, (question, primary, secondary_dict) in enumerate(questions_data):
+        key = f"q_{idx}"
+        response = st.session_state.responses.get(key, 3)
+        scores[primary] += response  # primary full weight
+        for sec_dim, weight in secondary_dict.items():
+            scores[sec_dim] += response * weight
+
+    # Normalize scores to average per dimension
+    max_per_dim = 4  # 4 questions per dimension
+    scores_normalized = {dim: scores[dim]/max_per_dim for dim in scores}
+
+    # Radar chart
     fig = go.Figure()
     fig.add_trace(go.Scatterpolar(
-        r=values,
-        theta=categories + [categories[0]],
+        r=list(scores_normalized.values()),
+        theta=list(scores_normalized.keys()),
         fill='toself',
-        name='Score',
-        marker_color='skyblue'
+        name='Learning Profile'
     ))
     fig.update_layout(
-        polar=dict(
-            radialaxis=dict(visible=True, range=[0,20], tickvals=[0,5,10,15,20])
-        ),
-        showlegend=False,
-        title="Jagged Profile Radar Chart"
+        polar=dict(radialaxis=dict(visible=True, range=[0,5])),
+        showlegend=False
     )
     st.plotly_chart(fig, use_container_width=True)
-    
-    # Top careers
-    st.subheader("Top Suggested Areas of Study / Careers")
-    top_dims = profile_df.sort_values("Score", ascending=False).head(3)["Dimension"].tolist()
-    for dim in top_dims:
-        st.write(f"**{dim}:** {career_suggestions[dim]}")
-    
-    st.button("Take Quiz Again", on_click=go_to_quiz)
+
+    # Optional: top 3 peak dimensions
+    top_dims = sorted(scores_normalized.items(), key=lambda x: x[1], reverse=True)[:3]
+    st.write("Your top 3 strengths may indicate potential areas for learning and development:")
+    for dim, val in top_dims:
+        st.write(f"- **{dim}** (score: {val:.2f})")
+
+    if st.button("Restart Quiz"):
+        st.session_state.page = "quiz"
+        st.session_state.responses = {}
+
+# -----------------------------
+# Page navigation
+# -----------------------------
+if st.session_state.page == "quiz":
+    show_quiz()
+else:
+    show_results()
