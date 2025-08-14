@@ -510,8 +510,7 @@ def create_network_chart(scores_normalized, connections):
     
     fig = go.Figure(data=[edge_trace, node_trace],
                     layout=go.Layout(
-                        title='Network of Your Learning Dimensions',
-                        titlefont_size=20,
+                        title=dict(text='Network of Your Learning Dimensions', font=dict(size=20)),
                         showlegend=False,
                         hovermode='closest',
                         margin=dict(b=20,l=5,r=5,t=40),
