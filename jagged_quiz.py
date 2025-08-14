@@ -637,103 +637,94 @@ def show_quiz():
                 st.session_state.page = "results"
                 st.rerun()
                 
-def create_venn_chart(scores_normalized, connections):
+def create_network_chart(scores_normalized, connections):
     """
-    Creates a Venn diagram-like chart for the top 3 strengths.
-    The overlap of the circles is simulated, and the intersection areas are
-    labeled with the connection weight.
+    Creates an interactive network diagram of all dimensions.
+    Nodes are dimensions, sized by score. Edges are connections, weighted by their value.
     """
-    
-    # Sort scores to get the top 3 dimensions
-    sorted_scores = sorted(scores_normalized.items(), key=lambda item: item[1], reverse=True)
-    top_dims = [dim for dim, score in sorted_scores[:3]]
-
-    if len(top_dims) < 2:
-        st.warning("Not enough data to create a Venn diagram. Please complete the quiz.")
+    if not scores_normalized:
         return go.Figure()
-        
-    traces = []
-    
-    # Define colors for the circles
-    colors = ['rgba(255, 99, 71, 0.5)', 'rgba(60, 179, 113, 0.5)', 'rgba(65, 105, 225, 0.5)']
-    
-    # Define positions for the circles in a triangle layout
-    circle_positions = {
-        top_dims[0]: (0, 0.5),  # Top
-        top_dims[1]: (-0.75, -0.5), # Bottom-left
-        top_dims[2]: (0.75, -0.5)  # Bottom-right
-    }
 
-    # Normalize connection scores for better visual representation
-    max_connection = max(connections.values()) if connections else 1
-    
-    # Create a trace for each circle
-    for i, dim in enumerate(top_dims):
-        cx, cy = circle_positions[dim]
-        
-        # Calculate the circle's radius based on the score
-        # Using a square root to scale the radius more smoothly
-        radius = math.sqrt(scores_normalized[dim]) * 0.4
-        
-        # Create a trace for the circle boundary
-        theta = [2 * math.pi * i / 100 for i in range(101)]
-        x = [cx + radius * math.cos(t) for t in theta]
-        y = [cy + radius * math.sin(t) for t in theta]
-        
-        traces.append(go.Scatter(
-            x=x, y=y,
-            mode='lines',
-            fill='toself',
-            fillcolor=colors[i],
-            line=dict(color=colors[i], width=2),
-            name=dim,
-            hoverinfo='none',
-        ))
-        
-        # Add a label for the dimension
-        traces.append(go.Scatter(
-            x=[cx], y=[cy],
-            mode='text',
-            text=dim,
-            textfont=dict(size=14, color='black', family='Arial'),
-            hoverinfo='none',
-        ))
-    
-    # Add labels for intersections (overlap areas)
-    # This is a simplified representation for visual clarity
-    intersection_points = {
-        (top_dims[0], top_dims[1]): (-0.4, 0),
-        (top_dims[0], top_dims[2]): (0.4, 0),
-        (top_dims[1], top_dims[2]): (0, -0.8),
-    }
+    # Create a layout for the nodes (a circular layout is simple and effective)
+    num_nodes = len(DIMENSIONS)
+    theta = [2 * math.pi * i / num_nodes for i in range(num_nodes)]
+    x_positions = [math.cos(t) for t in theta]
+    y_positions = [math.sin(t) for t in theta]
 
-    for key, pos in intersection_points.items():
-        dim1, dim2 = key
-        # Use a consistent key for looking up connections, regardless of order
-        connection_key = tuple(sorted((dim1, dim2)))
-        weight = connections.get(connection_key, 0)
-        
+    # Create a mapping from dimension name to its position
+    pos = {dim: (x_positions[i], y_positions[i]) for i, dim in enumerate(DIMENSIONS)}
+
+    # Create edges for the network
+    edge_x = []
+    edge_y = []
+    hover_text_edges = []
+    edge_weights = []
+
+    for (dim1, dim2), weight in connections.items():
         if weight > 0:
-            traces.append(go.Scatter(
-                x=[pos[0]], y=[pos[1]],
-                mode='text',
-                text=f"{weight:.1f}", # Display the connection weight
-                textfont=dict(size=12, color='black', weight='bold'),
-                hoverinfo='none'
-            ))
+            x0, y0 = pos[dim1]
+            x1, y1 = pos[dim2]
+            edge_x.extend([x0, x1, None])
+            edge_y.extend([y0, y1, None])
+            hover_text_edges.append(f"Connection: {dim1} - {dim2}<br>Weight: {weight:.2f}")
+            edge_weights.append(weight)
 
-    # Create the figure with all the traces
-    fig = go.Figure(data=traces,
+    # Create the edge trace
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=0.5, color='#888'),
+        hoverinfo='text',
+        text=hover_text_edges,
+        mode='lines'
+    )
+    
+    # Create nodes for the network
+    node_x = [pos[dim][0] for dim in DIMENSIONS]
+    node_y = [pos[dim][1] for dim in DIMENSIONS]
+    node_scores = [scores_normalized.get(dim, 1) for dim in DIMENSIONS]
+    node_text = [
+        f"{dim}<br>Score: {scores_normalized.get(dim, 1):.2f}" for dim in DIMENSIONS
+    ]
+
+    # Scale node size for better visualization
+    node_sizes = [score * 10 for score in node_scores]
+
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers+text',
+        hoverinfo='text',
+        text=DIMENSIONS,
+        textposition="bottom center",
+        marker=dict(
+            showscale=True,
+            colorscale='Viridis',
+            reversescale=True,
+            color=node_scores,
+            size=node_sizes,
+            colorbar=dict(
+                thickness=15,
+                title='Score',
+                xanchor='left',
+                titleside='right'
+            ),
+            line_width=2
+        ),
+        textfont=dict(size=10)
+    )
+    
+    fig = go.Figure(data=[edge_trace, node_trace],
                     layout=go.Layout(
-                        title='How Your Top 3 Strengths Overlap',
+                        title='Network of Your Learning Dimensions',
+                        titlefont_size=20,
                         showlegend=False,
                         hovermode='closest',
-                        margin=dict(b=20, l=5, r=5, t=40),
-                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-1.5, 1.5]),
+                        margin=dict(b=20,l=5,r=5,t=40),
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-1.2, 1.2]),
                         yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-1.2, 1.2]),
-                        height=500
+                        height=600
                     )
-                    )
+                   )
+
     return fig
 
 
@@ -790,11 +781,11 @@ def show_results():
         for dim in DIMENSIONS if max_scores[dim] > 0
     }
 
-    # --- Plotly Venn Chart (New Chart) ---
-    st.subheader("How Your Top Strengths Overlap")
-    st.markdown("This chart shows your top three strengths as overlapping circles. The numbers in the overlap areas represent the **strength of the connection** between those dimensions.")
-    fig_venn = create_venn_chart(scores_normalized, connections)
-    st.plotly_chart(fig_venn, use_container_width=True)
+    # --- Plotly Network Chart (New Chart) ---
+    st.subheader("Network of Your Learning Dimensions")
+    st.markdown("This chart shows how all your learning dimensions are connected. The **size** of each circle represents your score in that dimension, and the **lines** show the connections between them.")
+    fig_network = create_network_chart(scores_normalized, connections)
+    st.plotly_chart(fig_network, use_container_width=True)
     
     st.markdown("---")
 
