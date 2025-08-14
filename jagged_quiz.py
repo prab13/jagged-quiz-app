@@ -366,7 +366,6 @@ def show_results():
 
     # Initialize scores for all dimensions to zero
     scores = {dim: 0 for dim in DIMENSIONS}
-    max_scores = {dim: 0 for dim in DIMENSIONS}
 
     # Calculate scores based on the responses to the randomized questions
     for q_data in st.session_state.randomized_questions:
@@ -379,18 +378,15 @@ def show_results():
 
         # Apply scoring for primary dimension
         scores[primary_dim] += response
-        max_scores[primary_dim] += 5
 
         # Apply scoring for secondary dimensions
         for sec_dim, weight in secondary_weights.items():
             scores[sec_dim] += response * weight
-            max_scores[sec_dim] += 5 * weight
 
-    # Normalize scores by dividing by the number of questions that contribute to each dimension.
-    # This is a more accurate way to normalize.
+    # This normalization is a simplified version and may produce scores above 5.
     scores_normalized = {
-        dim: (scores[dim] / max_scores[dim]) * 5
-        for dim in DIMENSIONS if max_scores[dim] > 0
+        dim: scores[dim] / 10
+        for dim in DIMENSIONS
     }
 
     # --- Plotly Radar Chart ---
