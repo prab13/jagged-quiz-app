@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import random
 import plotly.graph_objects as go
+import math
 
 # Set page configuration for a clean, wide layout
 st.set_page_config(page_title="Jagged Learning Profile Quiz", layout="wide")
@@ -615,10 +616,91 @@ def show_quiz():
                 st.session_state.page = "results"
                 st.rerun()
 
+# --- Helper function for the new network chart ---
+def create_network_chart(questions_data, dimensions):
+    """Generates a plotly network chart to visualize dimension relationships."""
+    
+    # Calculate the total weight of connections between dimensions
+    connections = {}
+    for q_data in questions_data:
+        primary_dim = q_data["primary_dimension"]
+        for secondary_dim, weight in q_data["secondary_weights"].items():
+            # Store connections bidirectionally
+            if primary_dim != secondary_dim:
+                # Use a sorted tuple for the key to handle both directions (A, B) and (B, A)
+                key = tuple(sorted((primary_dim, secondary_dim)))
+                connections.setdefault(key, 0)
+                connections[key] += weight
+
+    # Generate node positions in a circular layout
+    num_dimensions = len(dimensions)
+    radius = 1.2
+    angle_step = 2 * math.pi / num_dimensions
+    node_positions = {dim: (radius * math.cos(i * angle_step), radius * math.sin(i * angle_step))
+                      for i, dim in enumerate(dimensions)}
+    
+    # Create lists for the nodes (dimensions)
+    node_x = [pos[0] for pos in node_positions.values()]
+    node_y = [pos[1] for pos in node_positions.values()]
+    node_labels = list(node_positions.keys())
+
+    # Create lists for the edges (connections)
+    edge_x = []
+    edge_y = []
+    line_widths = []
+    
+    # Get max width for normalization
+    max_width = max(connections.values()) if connections else 1
+    
+    for (dim1, dim2), weight in connections.items():
+        x0, y0 = node_positions[dim1]
+        x1, y1 = node_positions[dim2]
+        
+        # Add a line for the edge
+        edge_x.extend([x0, x1, None])
+        edge_y.extend([y0, y1, None])
+        
+        # Normalize line width for better visual distinction
+        normalized_width = (weight / max_width) * 5
+        line_widths.append(normalized_width)
+
+    # Plot the edges
+    edge_trace = go.Scatter(
+        x=edge_x, y=edge_y,
+        line=dict(width=line_widths, color='#888'),
+        hoverinfo='none',
+        mode='lines'
+    )
+    
+    # Plot the nodes
+    node_trace = go.Scatter(
+        x=node_x, y=node_y,
+        mode='markers+text',
+        hoverinfo='text',
+        textposition='bottom center',
+        marker=dict(
+            showscale=False,
+            colorscale='YlGnBu',
+            size=20,
+            line_width=2),
+        text=node_labels
+    )
+    
+    fig = go.Figure(data=[edge_trace, node_trace],
+                    layout=go.Layout(
+                        title='How Your Strengths Connect',
+                        showlegend=False,
+                        hovermode='closest',
+                        margin=dict(b=20, l=5, r=5, t=40),
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                    )
+    return fig
+
 
 # --- 4. Results page function ---
 def show_results():
-    """Calculates scores and displays the results page with a radar chart and table."""
+    """Calculates scores and displays the results page with charts and table."""
     st.markdown("""
         <div style="text-align: center; padding: 20px; background-color: #F0F2F6; border-radius: 10px; margin-bottom: 30px;">
             <h1 style="color: #4CAF50; font-size: 3em; font-weight: bold;">Your Jagged Learning Profile 🚀</h1>
@@ -658,7 +740,16 @@ def show_results():
         for dim in DIMENSIONS if max_scores[dim] > 0
     }
 
+    # --- Plotly Network Chart ---
+    st.subheader("How Your Strengths Connect")
+    st.markdown("This network chart shows the **relationships between different dimensions**. The **thicker the line**, the stronger the connection. This can help you understand how a passion in one area, like `Nature & Environment`, can lead to a related interest, like `Scientific Curiosity`.")
+    fig_network = create_network_chart(QUESTIONS_DATA, DIMENSIONS)
+    st.plotly_chart(fig_network, use_container_width=True)
+    
+    st.markdown("---")
+
     # --- Plotly Radar Chart ---
+    st.subheader("Your Learning Profile Overview")
     fig_radar = go.Figure()
     fig_radar.add_trace(go.Scatterpolar(
         r=list(scores_normalized.values()),
@@ -669,7 +760,7 @@ def show_results():
     fig_radar.update_layout(
         polar=dict(radialaxis=dict(visible=True, range=[1, 5])),
         showlegend=False,
-        title_text="Your Learning Profile Overview",
+        title_text="", # Removed title here to avoid duplication
         title_x=0.5 # Center the title
     )
     st.plotly_chart(fig_radar, use_container_width=True)
