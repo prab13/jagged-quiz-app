@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import random
 import plotly.graph_objects as go
+import networkx as nx
 import math
 
 # Set page configuration for a clean, wide layout with a collapsed sidebar
@@ -335,6 +336,71 @@ QUESTIONS_DATA = [
 # A set of all unique dimensions for initialization
 DIMENSIONS = sorted(list(set([q["primary_dimension"] for q in QUESTIONS_DATA] + [dim for q in QUESTIONS_DATA for dim in q["secondary_weights"]])))
 
+# Sample career paths data to avoid KeyError
+LEARNING_PATHS_AND_CAREERS = {
+    "Nature & Environment": {
+        "learning": ["Biology", "Environmental Science", "Geography"],
+        "careers": ["Ecologist", "Conservationist", "Urban Planner"],
+    },
+    "Numbers & Logic": {
+        "learning": ["Mathematics", "Computer Science", "Engineering"],
+        "careers": ["Data Scientist", "Software Engineer", "Actuary"],
+    },
+    "Words & Communication": {
+        "learning": ["English Literature", "Journalism", "Public Speaking"],
+        "careers": ["Journalist", "Marketing Manager", "Lawyer"],
+    },
+    "People & Community": {
+        "learning": ["Sociology", "Psychology", "Social Work"],
+        "careers": ["Teacher", "Therapist", "Human Resources Manager"],
+    },
+    "Making & Building": {
+        "learning": ["Mechanical Engineering", "Industrial Design", "Architecture"],
+        "careers": ["Architect", "Product Designer", "Construction Manager"],
+    },
+    "Movement & Health": {
+        "learning": ["Kinesiology", "Nutrition", "Sports Medicine"],
+        "careers": ["Physical Therapist", "Athletic Trainer", "Fitness Coach"],
+    },
+    "Arts & Creativity": {
+        "learning": ["Fine Arts", "Music Theory", "Creative Writing"],
+        "careers": ["Graphic Designer", "Musician", "Artist"],
+    },
+    "Technology & Innovation": {
+        "learning": ["Computer Science", "Robotics", "Cybersecurity"],
+        "careers": ["UX/UI Designer", "Robotics Engineer", "Data Analyst"],
+    },
+    "Entrepreneurship & Initiative": {
+        "learning": ["Business Management", "Marketing", "Economics"],
+        "careers": ["Startup Founder", "Project Manager", "Product Manager"],
+    },
+    "Critical & Reflective Thinking": {
+        "learning": ["Philosophy", "Debate", "Research Methods"],
+        "careers": ["Researcher", "Strategist", "Consultant"],
+    },
+    "Emotional & Social Intelligence": {
+        "learning": ["Psychology", "Counseling", "Mediation"],
+        "careers": ["Counselor", "Human Resources Specialist", "Educator"],
+    },
+    "Digital Media & Creativity": {
+        "learning": ["Graphic Design", "Digital Marketing", "Animation"],
+        "careers": ["Social Media Manager", "Video Editor", "Web Developer"],
+    },
+    "Scientific Curiosity": {
+        "learning": ["Physics", "Chemistry", "Astronomy"],
+        "careers": ["Scientist", "Lab Technician", "Medical Doctor"],
+    },
+    "Collaborative & Leadership Skills": {
+        "learning": ["Leadership Studies", "Team Management", "Project Planning"],
+        "careers": ["Team Lead", "Manager", "Community Organizer"],
+    },
+    "Mindfulness & Wellbeing": {
+        "learning": ["Mindfulness Training", "Yoga", "Personal Development"],
+        "careers": ["Wellness Coach", "Life Coach", "Therapist"],
+    },
+}
+
+
 # --- 2. Session state management ---
 # Initialize session state variables on first run
 if "page" not in st.session_state:
@@ -435,20 +501,21 @@ def show_quiz():
 
 def create_network_chart(scores_normalized, connections):
     """
-    Creates an interactive network diagram of all dimensions.
-    Nodes are dimensions, sized by score. Edges are connections, weighted by their value.
+    Creates an interactive network diagram of all dimensions using a force-directed layout
+    similar to Obsidian's graph view.
     """
     if not scores_normalized:
         return go.Figure()
 
-    # Create a layout for the nodes (a circular layout is simple and effective)
-    num_nodes = len(DIMENSIONS)
-    theta = [2 * math.pi * i / num_nodes for i in range(num_nodes)]
-    x_positions = [math.cos(t) for t in theta]
-    y_positions = [math.sin(t) for t in theta]
-
-    # Create a mapping from dimension name to its position
-    pos = {dim: (x_positions[i], y_positions[i]) for i, dim in enumerate(DIMENSIONS)}
+    # Create a NetworkX graph
+    G = nx.Graph()
+    G.add_nodes_from(DIMENSIONS)
+    for (dim1, dim2), weight in connections.items():
+        if weight > 0:
+            G.add_edge(dim1, dim2, weight=weight)
+    
+    # Use NetworkX's spring layout for a force-directed effect
+    pos = nx.spring_layout(G, k=0.5, iterations=50, seed=42) # k: optimal distance between nodes, iterations: number of iterations
 
     # Create edges for the network
     edge_x = []
@@ -456,19 +523,19 @@ def create_network_chart(scores_normalized, connections):
     hover_text_edges = []
     edge_weights = []
 
-    for (dim1, dim2), weight in connections.items():
-        if weight > 0:
-            x0, y0 = pos[dim1]
-            x1, y1 = pos[dim2]
-            edge_x.extend([x0, x1, None])
-            edge_y.extend([y0, y1, None])
-            hover_text_edges.append(f"Connection: {dim1} - {dim2}<br>Weight: {weight:.2f}")
-            edge_weights.append(weight)
+    for edge in G.edges(data=True):
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.extend([x0, x1, None])
+        edge_y.extend([y0, y1, None])
+        weight = connections.get(tuple(sorted((edge[0], edge[1]))), 0)
+        hover_text_edges.append(f"Connection: {edge[0]} - {edge[1]}<br>Weight: {weight:.2f}")
+        edge_weights.append(weight)
 
     # Create the edge trace
     edge_trace = go.Scatter(
         x=edge_x, y=edge_y,
-        line=dict(width=0.5, color='#888'),
+        line=dict(width=1, color='#888'),
         hoverinfo='text',
         text=hover_text_edges,
         mode='lines'
