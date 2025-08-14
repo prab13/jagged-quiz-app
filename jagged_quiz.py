@@ -336,10 +336,9 @@ DIMENSIONS = sorted(list(set([q["primary_dimension"] for q in QUESTIONS_DATA] + 
 LEARNING_PATHS_AND_CAREERS = {
     "Nature & Environment": {
         "learning": [
-            "Join a nature club or a gardening group. 🌱",
-            "Start a mini-project on recycling or composting at home. ♻️",
-            "Learn about different animal or plant species in your local area. 🌲",
-            "Watch documentaries about climate change and ecosystems. 🌍",
+            "Explore subjects like **Biology**, **Environmental Science**, or **Geology**.",
+            "Research topics like **sustainable agriculture**, **conservation**, and **climate science**.",
+            "Focus on understanding ecosystems, animal behavior, and the relationship between living things and their environment.",
         ],
         "careers": [
             "**Marine Biologist:** Studying sea life and ocean ecosystems.",
@@ -350,10 +349,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Numbers & Logic": {
         "learning": [
-            "Try solving logic puzzles like Sudoku or nonograms. 🧩",
-            "Learn a basic coding language like Python to solve math problems. 🐍",
-            "Play strategy games like chess or Go. ♟️",
-            "Take online courses in basic statistics or data analysis. 📊",
+            "Dive into **Advanced Mathematics**, **Statistics**, or **Formal Logic**.",
+            "Learn **Computer Science** and **Algorithmic Thinking** to solve complex problems.",
+            "Study **data analysis** and how to use data to spot trends and make informed decisions.",
         ],
         "careers": [
             "**Software Engineer:** Building apps and websites using code.",
@@ -364,10 +362,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Words & Communication": {
         "learning": [
-            "Start a blog or a YouTube channel about a topic you love. ✍️",
-            "Join a debate club or a school newspaper. 🗣️",
-            "Read different genres of books and try to write a review. 📚",
-            "Practice public speaking by giving presentations to friends or family. 🎤",
+            "Focus on **English Literature**, **Rhetoric**, and **Creative Writing** to improve your skills.",
+            "Study **Journalism** and **Media Studies** to understand how to share ideas with a wider audience.",
+            "Take courses in **public speaking** or **debate** to hone your persuasive skills.",
         ],
         "careers": [
             "**Journalist:** Writing stories and reporting on news for a living.",
@@ -378,10 +375,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "People & Community": {
         "learning": [
-            "Volunteer for a local charity or community event. ❤️",
-            "Organize a study group or a social club with your friends. 🤝",
-            "Practice being an active listener by paying close attention to others. 👂",
-            "Read books about psychology and social dynamics. 🧑‍🤝‍🧑",
+            "Explore subjects like **Sociology**, **Psychology**, and **Social Studies** to understand human behavior.",
+            "Learn about **Community Development** and **Public Policy**.",
+            "Focus on topics like **conflict resolution**, **group dynamics**, and **cultural diversity**.",
         ],
         "careers": [
             "**Teacher:** Helping students learn and grow in a classroom.",
@@ -392,10 +388,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Making & Building": {
         "learning": [
-            "Learn to build things with LEGO, wood, or other materials. 🧱",
-            "Take a workshop on robotics or electronics. 🤖",
-            "Fix something broken around the house, like a chair or a bike. 🛠️",
-            "Watch tutorials on how things are made or designed. 🏗️",
+            "Explore subjects in **Engineering** (mechanical, civil, electrical) and **Physics**.",
+            "Learn about **Industrial Design** and **Architecture**.",
+            "Focus on hands-on skills like **woodworking**, **robotics**, or **3D modeling**.",
         ],
         "careers": [
             "**Architect:** Designing buildings and structures.",
@@ -406,10 +401,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Movement & Health": {
         "learning": [
-            "Try a new sport or dance class. 🤸",
-            "Learn about nutrition and how to make healthy snacks. 🍎",
-            "Set a fitness goal and track your progress. 🏃",
-            "Explore mindfulness or yoga to connect with your body. 🧘",
+            "Study **Anatomy**, **Physiology**, and **Kinesiology** to understand the human body.",
+            "Learn about **Nutrition Science** and how it impacts health.",
+            "Explore **Sports Medicine** and **Exercise Science**.",
         ],
         "careers": [
             "**Physical Therapist:** Helping people recover from injuries.",
@@ -420,10 +414,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Arts & Creativity": {
         "learning": [
-            "Start drawing, painting, or sculpting. 🎨",
-            "Write songs or learn to play a musical instrument. 🎸",
-            "Explore graphic design by creating posters or logos. ✍️",
-            "Try acting in a school play or making your own short films. 🎬",
+            "Study **Art History**, **Visual Arts**, and **Creative Expression**.",
+            "Learn **Music Theory** or **Film Studies**.",
+            "Take classes in **graphic design**, **drawing**, or **sculpture** to develop your skills.",
         ],
         "careers": [
             "**Graphic Designer:** Creating visual concepts for brands and media.",
@@ -434,10 +427,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Technology & Innovation": {
         "learning": [
-            "Join a coding club or robotics team. 💻",
-            "Learn to use new software or apps for creative projects. 📲",
-            "Try building a simple website or an app. 🌐",
-            "Research and experiment with AI or virtual reality tools. 🤖",
+            "Explore **Computer Programming** in languages like Python or JavaScript.",
+            "Study **AI and Machine Learning** or **Cybersecurity**.",
+            "Learn about **User Experience (UX) Design** and **Data Science**.",
         ],
         "careers": [
             "**Cybersecurity Specialist:** Protecting computer systems from hackers.",
@@ -448,10 +440,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Entrepreneurship & Initiative": {
         "learning": [
-            "Start a small business like a lemonade stand or a dog-walking service. 💰",
-            "Organize a fundraising event for a cause you care about. 📈",
-            "Brainstorm ideas for products or services that could solve problems. 💡",
-            "Read about famous innovators and their stories. 🚀",
+            "Take classes in **Business Studies**, **Economics**, or **Marketing**.",
+            "Study **Project Management** and **Strategic Planning**.",
+            "Learn about **Finance** and the principles of building and managing a business.",
         ],
         "careers": [
             "**Entrepreneur:** Starting and growing your own company.",
@@ -462,10 +453,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Critical & Reflective Thinking": {
         "learning": [
-            "Debate a topic with friends, trying to see both sides. 🤔",
-            "Keep a journal to reflect on your decisions and experiences. 📝",
-            "Read non-fiction books about philosophy or history. 📖",
-            "Research and analyze a topic you are curious about and share what you learned. 🧐",
+            "Engage with **Philosophy**, **Ethics**, and **Formal Logic**.",
+            "Study **History** and **Research Methods** to analyze past events and information.",
+            "Practice writing **essays** and **analytical papers** to develop your reasoning.",
         ],
         "careers": [
             "**Scientist:** Asking big questions and designing experiments to find answers.",
@@ -476,10 +466,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Emotional & Social Intelligence": {
         "learning": [
-            "Practice empathy by listening to a friend's problems without judgment. 🤗",
-            "Volunteer as a mentor for younger students. 🤝",
-            "Read books or watch videos on communication and body language. 🗣️",
-            "Write down your feelings and try to understand why you feel that way. 🥰",
+            "Study **Psychology**, **Sociology**, and **Communication Studies**.",
+            "Learn about **Neuroscience** and how emotions are processed in the brain.",
+            "Explore **Counseling** and **Social Work** to understand how to help others.",
         ],
         "careers": [
             "**Psychologist:** Helping people understand and manage their emotions.",
@@ -490,10 +479,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Digital Media & Creativity": {
         "learning": [
-            "Learn a new software like Photoshop or a video editor. 💻",
-            "Create a short film or a podcast with your friends. 🎬",
-            "Experiment with digital art, music, or animation. 🎨",
-            "Design social media graphics for a school event or club. 📸",
+            "Take courses in **Digital Arts**, **Multimedia Production**, and **Animation**.",
+            "Learn about **User Experience (UX) Design** and **Interactive Media**.",
+            "Focus on subjects like **Film Production**, **Audio Engineering**, and **Graphic Design**.",
         ],
         "careers": [
             "**YouTuber/Content Creator:** Making videos and building a community online.",
@@ -504,10 +492,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Scientific Curiosity": {
         "learning": [
-            "Do simple science experiments at home. 🧪",
-            "Visit a science museum or a planetarium. 🔭",
-            "Read articles or books about new scientific discoveries. 🔬",
-            "Learn about the stars and planets with an app or a telescope. 🌌",
+            "Explore **Biology**, **Chemistry**, and **Physics** to understand the natural world.",
+            "Study **Astronomy** and **Cosmology** to learn about the universe.",
+            "Learn about **scientific methods**, **experimental design**, and **data interpretation**.",
         ],
         "careers": [
             "**Biologist:** Studying living organisms and their environments.",
@@ -518,10 +505,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Collaborative & Leadership Skills": {
         "learning": [
-            "Lead a group project at school or in a club. 🤝",
-            "Organize a team for a school sport or a community event. 🏆",
-            "Read books or articles about famous leaders and their styles. 🗺️",
-            "Practice giving constructive feedback to others. 🗣️",
+            "Take courses in **Organizational Behavior** and **Strategic Planning**.",
+            "Study **Public Administration** and the role of leadership in community settings.",
+            "Learn about **project management** and **effective communication** in a team environment.",
         ],
         "careers": [
             "**CEO/Manager:** Leading a company or a team.",
@@ -532,10 +518,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
     "Mindfulness & Wellbeing": {
         "learning": [
-            "Try meditation or deep breathing exercises. 🧘",
-            "Keep a gratitude journal to focus on positive things. 🙏",
-            "Learn about stress management techniques and self-care. 🥰",
-            "Practice setting healthy boundaries with your friends and family. ⚖️",
+            "Study **Psychology**, with a focus on **positive psychology** and **cognitive behavioral therapy**.",
+            "Explore **Neuroscience** to understand how the brain and body connect.",
+            "Learn about **Health Sciences** and **Behavioral Studies**.",
         ],
         "careers": [
             "**Therapist:** Helping people improve their mental health.",
@@ -710,8 +695,8 @@ def show_results():
         st.markdown(f"#### **{dimension}** (Score: {score:.2f})")
 
         # Use an expander to make the content collapsible
-        with st.expander("💡 Learning Paths & Activities"):
-            st.markdown("Here are some things you can do right now to explore this area:")
+        with st.expander("💡 Learning Paths & Subjects"):
+            st.markdown("Here are some subjects and fields you can explore:")
             paths = LEARNING_PATHS_AND_CAREERS.get(dimension, {}).get("learning", [])
             for path in paths:
                 st.markdown(f"- {path}")
