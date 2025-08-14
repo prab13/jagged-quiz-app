@@ -124,13 +124,12 @@ def show_quiz():
         st.session_state.page = "results"
 
 # -----------------------------
-# 4. Results page with radar + heatmap
+# 4. Results page with radar + table
 # -----------------------------
 def show_results():
     st.title("Your Jagged Learning Profile")
 
     scores = {dim:0 for dim in dimensions}
-    overlap_matrix = pd.DataFrame(0, index=dimensions, columns=dimensions)
 
     for idx, (question, primary, secondary_dict) in enumerate(questions_data):
         key = f"q_{idx}"
@@ -138,7 +137,6 @@ def show_results():
         scores[primary] += response
         for sec_dim, weight in secondary_dict.items():
             scores[sec_dim] += response * weight
-            overlap_matrix.loc[primary, sec_dim] += response * weight
 
     scores_normalized = {dim: scores[dim]/4 for dim in scores}
 
@@ -156,21 +154,16 @@ def show_results():
     )
     st.plotly_chart(fig_radar, use_container_width=True)
 
-    # Heatmap
-    fig_heat = go.Figure(data=go.Heatmap(
-        z=overlap_matrix.values,
-        x=overlap_matrix.columns,
-        y=overlap_matrix.index,
-        colorscale='Viridis',
-        colorbar=dict(title="Weighted Contribution")
-    ))
-    fig_heat.update_layout(title="Dimension Overlap Heatmap")
-    st.plotly_chart(fig_heat, use_container_width=True)
+    # Table view
+    st.subheader("Scores per Dimension")
+    score_df = pd.DataFrame(list(scores_normalized.items()), columns=["Dimension", "Score"])
+    score_df = score_df.sort_values("Score", ascending=False)
+    st.dataframe(score_df)
 
-    top_dims = sorted(scores_normalized.items(), key=lambda x:x[1], reverse=True)[:3]
+    top_dims = score_df.head(3)
     st.write("Your top 3 strengths may indicate potential areas for learning and development:")
-    for dim, val in top_dims:
-        st.write(f"- **{dim}** (score: {val:.2f})")
+    for _, row in top_dims.iterrows():
+        st.write(f"- **{row['Dimension']}** (score: {row['Score']:.2f})")
 
     if st.button("Restart Quiz"):
         st.session_state.page = "quiz"
