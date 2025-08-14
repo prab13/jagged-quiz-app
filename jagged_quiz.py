@@ -517,41 +517,34 @@ def create_network_chart(scores_normalized, connections):
     # Use NetworkX's spring layout for a force-directed effect
     pos = nx.spring_layout(G, k=0.5, iterations=50, seed=42) # k: optimal distance between nodes, iterations: number of iterations
 
-    # Create edges for the network
-    edge_x = []
-    edge_y = []
-    hover_text_edges = []
-    edge_weights = []
-
+    # Create traces for each individual edge to allow for per-line styling
+    edge_traces = []
     for edge in G.edges(data=True):
         x0, y0 = pos[edge[0]]
         x1, y1 = pos[edge[1]]
-        edge_x.extend([x0, x1, None])
-        edge_y.extend([y0, y1, None])
         weight = connections.get(tuple(sorted((edge[0], edge[1]))), 0)
-        hover_text_edges.append(f"Connection: {edge[0]} - {edge[1]}<br>Weight: {weight:.2f}")
-        edge_weights.append(weight)
-
-    # Create the edge trace with dynamic width and color based on weight
-    # We use a color scale to give the lines a dynamic, flowing look
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(
-            width=[w * 3 for w in edge_weights],  # Scale line width by weight
-            color=edge_weights,                   # Use weight to determine line color
-            colorscale='Viridis',                 # A nice color scale for the lines
-            showscale=True,
-            colorbar=dict(
-                thickness=15,
-                title='Connection Strength',
-                x=1.05
+        
+        # We need a small weight to avoid a zero-width line
+        line_width = max(0.5, weight * 3) 
+        
+        # Use a color scale to give the lines a dynamic, flowing look
+        # Normalizing the weight for the color scale (assuming max weight is 5)
+        normalized_weight_for_color = weight / 5.0
+        
+        edge_trace = go.Scatter(
+            x=[x0, x1, None], 
+            y=[y0, y1, None],
+            line=dict(
+                width=line_width,
+                color=f'rgba(68, 1, 84, {normalized_weight_for_color})', # Use a single color with a dynamic alpha for a flow effect
             ),
-        ),
-        hoverinfo='text',
-        text=hover_text_edges,
-        mode='lines'
-    )
-    
+            hoverinfo='text',
+            text=f"Connection: {edge[0]} - {edge[1]}<br>Weight: {weight:.2f}",
+            mode='lines',
+            opacity=0.8
+        )
+        edge_traces.append(edge_trace)
+
     # Create nodes for the network
     node_x = [pos[dim][0] for dim in DIMENSIONS]
     node_y = [pos[dim][1] for dim in DIMENSIONS]
@@ -570,17 +563,24 @@ def create_network_chart(scores_normalized, connections):
         text=DIMENSIONS,
         textposition="bottom center",
         marker=dict(
-            showscale=False, # We'll just show one color scale for the lines
             colorscale='Viridis',
             reversescale=True,
             color=node_scores,
             size=node_sizes,
+            colorbar=dict(
+                thickness=15,
+                title=dict(text='Score', side='right'),
+                tickvals=[1, 2, 3, 4, 5],
+                ticktext=['1', '2', '3', '4', '5'],
+            ),
             line_width=2
         ),
         textfont=dict(size=10)
     )
     
-    fig = go.Figure(data=[edge_trace, node_trace],
+    # Combine all traces for the final figure
+    fig_data = edge_traces + [node_trace]
+    fig = go.Figure(data=fig_data,
                     layout=go.Layout(
                         title=dict(text='Network of Your Learning Dimensions', font=dict(size=20)),
                         showlegend=False,
