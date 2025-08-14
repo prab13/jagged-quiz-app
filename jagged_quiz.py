@@ -554,6 +554,7 @@ if "page" not in st.session_state:
     st.session_state.responses = {}
     st.session_state.randomized_questions = QUESTIONS_DATA.copy()
     random.shuffle(st.session_state.randomized_questions)
+    st.session_state.current_question_index = 0
 
 # --- 3. Quiz page function ---
 def show_quiz():
@@ -585,31 +586,49 @@ def show_quiz():
     """, unsafe_allow_html=True)
     st.write("---")
 
-    # Calculate the number of questions answered
-    answered_count = len([r for r in st.session_state.responses.values() if r is not None])
+    # Get the current question
+    current_question_index = st.session_state.current_question_index
     total_questions = len(st.session_state.randomized_questions)
-    progress_percentage = answered_count / total_questions
+    q_data = st.session_state.randomized_questions[current_question_index]
+
+    # Display progress
+    progress_percentage = (current_question_index + 1) / total_questions
     st.progress(progress_percentage)
-    st.markdown(f"**Progress:** {answered_count}/{total_questions} questions answered.")
+    st.markdown(f"**Question {current_question_index + 1} of {total_questions}**")
 
-    # Use a unique key for each question based on its content, not its index
-    for q_data in st.session_state.randomized_questions:
-        question_text = q_data["question"]
-        st.session_state.responses[question_text] = st.radio(
-            question_text,
-            options=["1 - 😞", "2 - 😐", "3 - 👍", "4 - 😄", "5 - 😎"],
-            index=None,  # No default selection
-            key=question_text,
-            horizontal=True # Display radio buttons horizontally for better layout
-        )
-
+    # Display the single question
+    question_text = q_data["question"]
+    st.session_state.responses[question_text] = st.radio(
+        question_text,
+        options=["1 - 😞", "2 - 😐", "3 - 👍", "4 - 😄", "5 - 😎"],
+        index=None,
+        key=f"q_{current_question_index}",
+        horizontal=True
+    )
     st.markdown("---")
-    # Only allow submission if all questions have been answered
-    if answered_count == total_questions:
-        if st.button("Submit Quiz", type="primary"):
-            st.session_state.page = "results"
-    else:
-        st.warning("Please answer all questions before submitting.")
+
+    col1, col2, col3 = st.columns([1, 2, 1])
+
+    # Back button
+    with col1:
+        if st.session_state.current_question_index > 0:
+            if st.button("Back"):
+                st.session_state.current_question_index -= 1
+                st.rerun()
+
+    # Next / Submit button
+    with col3:
+        # Check if an answer has been selected for the current question
+        has_answered = st.session_state.responses.get(question_text) is not None
+
+        if st.session_state.current_question_index < total_questions - 1:
+            if st.button("Next", type="primary", disabled=not has_answered):
+                st.session_state.current_question_index += 1
+                st.rerun()
+        else: # Last question
+            if st.button("Submit Quiz", type="primary", disabled=not has_answered):
+                st.session_state.page = "results"
+                st.rerun()
 
 
 # --- 4. Results page function ---
@@ -633,16 +652,19 @@ def show_results():
         secondary_weights = q_data["secondary_weights"]
 
         # Extract integer value from emoji-enhanced radio button selection
-        response = int(st.session_state.responses[question_text].split(' ')[0])
+        # Ensure a response exists before trying to access it
+        response_str = st.session_state.responses.get(question_text)
+        if response_str:
+            response = int(response_str.split(' ')[0])
 
-        # Apply scoring for primary dimension
-        scores[primary_dim] += response
-        max_scores[primary_dim] += 5
+            # Apply scoring for primary dimension
+            scores[primary_dim] += response
+            max_scores[primary_dim] += 5
 
-        # Apply scoring for secondary dimensions
-        for sec_dim, weight in secondary_weights.items():
-            scores[sec_dim] += response * weight
-            max_scores[sec_dim] += 5 * weight
+            # Apply scoring for secondary dimensions
+            for sec_dim, weight in secondary_weights.items():
+                scores[sec_dim] += response * weight
+                max_scores[sec_dim] += 5 * weight
 
     # Normalize scores by dividing the raw score by the maximum possible score for that dimension,
     # then scaling the result to be between 1 and 5. This prevents scores from exceeding 5.
@@ -707,6 +729,8 @@ def show_results():
         # Re-randomize questions for the new quiz
         st.session_state.randomized_questions = QUESTIONS_DATA.copy()
         random.shuffle(st.session_state.randomized_questions)
+        st.session_state.current_question_index = 0
+        st.rerun()
 
 
 # --- 5. Page navigation logic ---
