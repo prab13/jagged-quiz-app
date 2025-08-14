@@ -542,6 +542,21 @@ if "page" not in st.session_state:
     random.shuffle(st.session_state.randomized_questions)
     st.session_state.current_question_index = 0
 
+def show_debug_button():
+    """Displays a debug button in the sidebar to randomly complete the quiz."""
+    st.sidebar.markdown("---")
+    st.sidebar.header("Debug Tools")
+    if st.sidebar.button("Debug: Randomly Complete Quiz"):
+        # Reset responses and fill with random choices
+        st.session_state.responses = {}
+        options = ["1 - 😞", "2 - 😐", "3 - 👍", "4 - 😄", "5 - 😎"]
+        for q_data in st.session_state.randomized_questions:
+            st.session_state.responses[q_data["question"]] = random.choice(options)
+        
+        # Transition to the results page
+        st.session_state.page = "results"
+        st.rerun()
+
 # --- 3. Quiz page function ---
 def show_quiz():
     """Displays the quiz questions and a submit button."""
@@ -593,7 +608,7 @@ def show_quiz():
     )
     st.markdown("---")
 
-    col1, col2, col3, col4 = st.columns([1, 1, 1, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
 
     # Back button
     with col1:
@@ -615,19 +630,6 @@ def show_quiz():
             if st.button("Submit Quiz", type="primary", disabled=not has_answered):
                 st.session_state.page = "results"
                 st.rerun()
-
-    # Debug button
-    with col4:
-        if st.button("Debug: Randomly Complete Quiz"):
-            # Reset responses and fill with random choices
-            st.session_state.responses = {}
-            options = ["1 - 😞", "2 - 😐", "3 - 👍", "4 - 😄", "5 - 😎"]
-            for q_data in st.session_state.randomized_questions:
-                st.session_state.responses[q_data["question"]] = random.choice(options)
-            
-            # Transition to the results page
-            st.session_state.page = "results"
-            st.rerun()
 
 # --- Helper function for the new network chart ---
 def create_network_chart(questions_data, dimensions):
@@ -823,6 +825,7 @@ def show_results():
 
 
 # --- 5. Page navigation logic ---
+show_debug_button()
 if st.session_state.page == "quiz":
     show_quiz()
 else:
