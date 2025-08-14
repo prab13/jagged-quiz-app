@@ -486,7 +486,7 @@ LEARNING_PATHS_AND_CAREERS = {
         "learning": [
             "Take courses in **Digital Arts**, **Multimedia Production**, and **Animation**.",
             "Learn about **User Experience (UX) Design** and **Interactive Media**.",
-            "Focus on subjects like **Film Production**, **Audio Engineering**, and **Graphic Design**.",
+            "Focus on subjects like **Film Production**, **Audio Engineering** and **Graphic Design**.",
         ],
         "careers": [
             "**YouTuber/Content Creator:** Making videos and building a community online.",
@@ -633,81 +633,103 @@ def show_quiz():
             if st.button("Submit Quiz", type="primary", disabled=not has_answered):
                 st.session_state.page = "results"
                 st.rerun()
-
-# --- Helper function for the new network chart ---
-def create_network_chart(questions_data, dimensions):
+                
+def create_venn_chart(scores_normalized, connections):
     """
-    Generates a plotly network chart to visualize dimension relationships.
-    The function has been refactored to create a separate trace for each line
-    to resolve the plotly ValueError related to line widths.
+    Creates a Venn diagram-like chart for the top 3 strengths.
+    The overlap of the circles is simulated, and the intersection areas are
+    labeled with the connection weight.
     """
-    # Calculate the total weight of connections between dimensions
-    connections = {}
-    for q_data in questions_data:
-        primary_dim = q_data["primary_dimension"]
-        for secondary_dim, weight in q_data["secondary_weights"].items():
-            if primary_dim != secondary_dim:
-                key = tuple(sorted((primary_dim, secondary_dim)))
-                connections.setdefault(key, 0)
-                connections[key] += weight
-
-    # Generate node positions in a circular layout
-    num_dimensions = len(dimensions)
-    radius = 1.2
-    angle_step = 2 * math.pi / num_dimensions
-    node_positions = {dim: (radius * math.cos(i * angle_step), radius * math.sin(i * angle_step))
-                      for i, dim in enumerate(dimensions)}
     
-    # Create the list of traces for the plot
+    # Sort scores to get the top 3 dimensions
+    sorted_scores = sorted(scores_normalized.items(), key=lambda item: item[1], reverse=True)
+    top_dims = [dim for dim, score in sorted_scores[:3]]
+
+    if len(top_dims) < 2:
+        st.warning("Not enough data to create a Venn diagram. Please complete the quiz.")
+        return go.Figure()
+        
     traces = []
     
-    # Get max width for normalization
-    max_width = max(connections.values()) if connections else 1
+    # Define colors for the circles
+    colors = ['rgba(255, 99, 71, 0.5)', 'rgba(60, 179, 113, 0.5)', 'rgba(65, 105, 225, 0.5)']
     
-    # Create a trace for each edge
-    for (dim1, dim2), weight in connections.items():
-        x0, y0 = node_positions[dim1]
-        x1, y1 = node_positions[dim2]
-        
-        # Normalize line width for better visual distinction
-        normalized_width = (weight / max_width) * 5
-        
-        edge_trace = go.Scatter(
-            x=[x0, x1],
-            y=[y0, y1],
-            line=dict(width=normalized_width, color='#888'),
-            hoverinfo='none',
-            mode='lines'
-        )
-        traces.append(edge_trace)
+    # Define positions for the circles in a triangle layout
+    circle_positions = {
+        top_dims[0]: (0, 0.5),  # Top
+        top_dims[1]: (-0.75, -0.5), # Bottom-left
+        top_dims[2]: (0.75, -0.5)  # Bottom-right
+    }
 
-    # Plot the nodes
-    node_x = [pos[0] for pos in node_positions.values()]
-    node_y = [pos[1] for pos in node_positions.values()]
-    node_labels = list(node_positions.keys())
+    # Normalize connection scores for better visual representation
+    max_connection = max(connections.values()) if connections else 1
     
-    node_trace = go.Scatter(
-        x=node_x, y=node_y,
-        mode='markers+text',
-        hoverinfo='text',
-        textposition='bottom center',
-        marker=dict(
-            showscale=False,
-            colorscale='YlGnBu',
-            size=20,
-            line_width=2),
-        text=node_labels
-    )
-    traces.append(node_trace)
+    # Create a trace for each circle
+    for i, dim in enumerate(top_dims):
+        cx, cy = circle_positions[dim]
+        
+        # Calculate the circle's radius based on the score
+        # Using a square root to scale the radius more smoothly
+        radius = math.sqrt(scores_normalized[dim]) * 0.4
+        
+        # Create a trace for the circle boundary
+        theta = [2 * math.pi * i / 100 for i in range(101)]
+        x = [cx + radius * math.cos(t) for t in theta]
+        y = [cy + radius * math.sin(t) for t in theta]
+        
+        traces.append(go.Scatter(
+            x=x, y=y,
+            mode='lines',
+            fill='toself',
+            fillcolor=colors[i],
+            line=dict(color=colors[i], width=2),
+            name=dim,
+            hoverinfo='none',
+        ))
+        
+        # Add a label for the dimension
+        traces.append(go.Scatter(
+            x=[cx], y=[cy],
+            mode='text',
+            text=dim,
+            textfont=dict(size=14, color='black', family='Arial'),
+            hoverinfo='none',
+        ))
     
+    # Add labels for intersections (overlap areas)
+    # This is a simplified representation for visual clarity
+    intersection_points = {
+        (top_dims[0], top_dims[1]): (-0.4, 0),
+        (top_dims[0], top_dims[2]): (0.4, 0),
+        (top_dims[1], top_dims[2]): (0, -0.8),
+    }
+
+    for key, pos in intersection_points.items():
+        dim1, dim2 = key
+        # Use a consistent key for looking up connections, regardless of order
+        connection_key = tuple(sorted((dim1, dim2)))
+        weight = connections.get(connection_key, 0)
+        
+        if weight > 0:
+            traces.append(go.Scatter(
+                x=[pos[0]], y=[pos[1]],
+                mode='text',
+                text=f"{weight:.1f}", # Display the connection weight
+                textfont=dict(size=12, color='black', weight='bold'),
+                hoverinfo='none'
+            ))
+
+    # Create the figure with all the traces
     fig = go.Figure(data=traces,
                     layout=go.Layout(
-                        title='How Your Strengths Connect',
+                        title='How Your Top 3 Strengths Overlap',
                         showlegend=False,
                         hovermode='closest',
                         margin=dict(b=20, l=5, r=5, t=40),
-                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-1.5, 1.5]),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-1.2, 1.2]),
+                        height=500
+                    )
                     )
     return fig
 
@@ -725,6 +747,17 @@ def show_results():
     # Initialize scores and maximum possible scores for all dimensions to zero
     scores = {dim: 0 for dim in DIMENSIONS}
     max_scores = {dim: 0 for dim in DIMENSIONS}
+    
+    # Calculate connections for the Venn chart
+    connections = {}
+    for q_data in QUESTIONS_DATA:
+        primary_dim = q_data["primary_dimension"]
+        for secondary_dim, weight in q_data["secondary_weights"].items():
+            if primary_dim != secondary_dim:
+                key = tuple(sorted((primary_dim, secondary_dim)))
+                connections.setdefault(key, 0)
+                connections[key] += weight
+
 
     # Calculate scores based on the responses to the randomized questions
     for q_data in st.session_state.randomized_questions:
@@ -754,11 +787,11 @@ def show_results():
         for dim in DIMENSIONS if max_scores[dim] > 0
     }
 
-    # --- Plotly Network Chart ---
-    st.subheader("How Your Strengths Connect")
-    st.markdown("This network chart shows the **relationships between different dimensions**. The **thicker the line**, the stronger the connection. This can help you understand how a passion in one area, like `Nature & Environment`, can lead to a related interest, like `Scientific Curiosity`.")
-    fig_network = create_network_chart(QUESTIONS_DATA, DIMENSIONS)
-    st.plotly_chart(fig_network, use_container_width=True)
+    # --- Plotly Venn Chart (New Chart) ---
+    st.subheader("How Your Top Strengths Overlap")
+    st.markdown("This chart shows your top three strengths as overlapping circles. The numbers in the overlap areas represent the **strength of the connection** between those dimensions.")
+    fig_venn = create_venn_chart(scores_normalized, connections)
+    st.plotly_chart(fig_venn, use_container_width=True)
     
     st.markdown("---")
 
