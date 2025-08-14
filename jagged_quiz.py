@@ -6,8 +6,12 @@ import random
 import plotly.graph_objects as go
 import math
 
-# Set page configuration for a clean, wide layout
-st.set_page_config(page_title="Jagged Learning Profile Quiz", layout="wide")
+# Set page configuration for a clean, wide layout with a collapsed sidebar
+st.set_page_config(
+    page_title="Jagged Learning Profile Quiz",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 # --- 1. Data Definitions (a more robust structure using a list of dictionaries) ---
 # Each question is a dictionary with clear keys for its properties.
@@ -532,7 +536,6 @@ LEARNING_PATHS_AND_CAREERS = {
     },
 }
 
-
 # --- 2. Session state management ---
 # Initialize session state variables on first run
 if "page" not in st.session_state:
@@ -633,16 +636,17 @@ def show_quiz():
 
 # --- Helper function for the new network chart ---
 def create_network_chart(questions_data, dimensions):
-    """Generates a plotly network chart to visualize dimension relationships."""
-    
+    """
+    Generates a plotly network chart to visualize dimension relationships.
+    The function has been refactored to create a separate trace for each line
+    to resolve the plotly ValueError related to line widths.
+    """
     # Calculate the total weight of connections between dimensions
     connections = {}
     for q_data in questions_data:
         primary_dim = q_data["primary_dimension"]
         for secondary_dim, weight in q_data["secondary_weights"].items():
-            # Store connections bidirectionally
             if primary_dim != secondary_dim:
-                # Use a sorted tuple for the key to handle both directions (A, B) and (B, A)
                 key = tuple(sorted((primary_dim, secondary_dim)))
                 connections.setdefault(key, 0)
                 connections[key] += weight
@@ -654,40 +658,34 @@ def create_network_chart(questions_data, dimensions):
     node_positions = {dim: (radius * math.cos(i * angle_step), radius * math.sin(i * angle_step))
                       for i, dim in enumerate(dimensions)}
     
-    # Create lists for the nodes (dimensions)
-    node_x = [pos[0] for pos in node_positions.values()]
-    node_y = [pos[1] for pos in node_positions.values()]
-    node_labels = list(node_positions.keys())
-
-    # Create lists for the edges (connections)
-    edge_x = []
-    edge_y = []
-    line_widths = []
+    # Create the list of traces for the plot
+    traces = []
     
     # Get max width for normalization
     max_width = max(connections.values()) if connections else 1
     
+    # Create a trace for each edge
     for (dim1, dim2), weight in connections.items():
         x0, y0 = node_positions[dim1]
         x1, y1 = node_positions[dim2]
         
-        # Add a line for the edge
-        edge_x.extend([x0, x1, None])
-        edge_y.extend([y0, y1, None])
-        
         # Normalize line width for better visual distinction
         normalized_width = (weight / max_width) * 5
-        line_widths.append(normalized_width)
+        
+        edge_trace = go.Scatter(
+            x=[x0, x1],
+            y=[y0, y1],
+            line=dict(width=normalized_width, color='#888'),
+            hoverinfo='none',
+            mode='lines'
+        )
+        traces.append(edge_trace)
 
-    # Plot the edges
-    edge_trace = go.Scatter(
-        x=edge_x, y=edge_y,
-        line=dict(width=line_widths, color='#888'),
-        hoverinfo='none',
-        mode='lines'
-    )
-    
     # Plot the nodes
+    node_x = [pos[0] for pos in node_positions.values()]
+    node_y = [pos[1] for pos in node_positions.values()]
+    node_labels = list(node_positions.keys())
+    
     node_trace = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
@@ -700,8 +698,9 @@ def create_network_chart(questions_data, dimensions):
             line_width=2),
         text=node_labels
     )
+    traces.append(node_trace)
     
-    fig = go.Figure(data=[edge_trace, node_trace],
+    fig = go.Figure(data=traces,
                     layout=go.Layout(
                         title='How Your Strengths Connect',
                         showlegend=False,
