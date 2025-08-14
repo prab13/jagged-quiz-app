@@ -536,6 +536,9 @@ LEARNING_PATHS_AND_CAREERS = {
     },
 }
 
+# A set of all unique dimensions for initialization
+DIMENSIONS = sorted(list(set([q["primary_dimension"] for q in QUESTIONS_DATA] + [dim for q in QUESTIONS_DATA for dim in q["secondary_weights"]])))
+
 # --- 2. Session state management ---
 # Initialize session state variables on first run
 if "page" not in st.session_state:
@@ -818,8 +821,8 @@ def show_results():
         list(scores_normalized.items()), columns=["Dimension", "Score"]
     )
     score_df = score_df.sort_values("Score", ascending=False)
-    # Display the table with a clean index and formatted score
-    st.dataframe(score_df.style.format({"Score": "{:.2f}"}), use_container_width=True)
+    # Display the table with a clean index and formatted score, with a height to show all rows
+    st.dataframe(score_df.style.format({"Score": "{:.2f}"}), use_container_width=True, height=len(score_df) * 35 + 38)
 
     # --- Top Strengths Summary ---
     st.subheader("Top Strengths & Career Paths 🚀")
