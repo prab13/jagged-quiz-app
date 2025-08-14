@@ -532,10 +532,21 @@ def create_network_chart(scores_normalized, connections):
         hover_text_edges.append(f"Connection: {edge[0]} - {edge[1]}<br>Weight: {weight:.2f}")
         edge_weights.append(weight)
 
-    # Create the edge trace
+    # Create the edge trace with dynamic width and color based on weight
+    # We use a color scale to give the lines a dynamic, flowing look
     edge_trace = go.Scatter(
         x=edge_x, y=edge_y,
-        line=dict(width=1, color='#888'),
+        line=dict(
+            width=[w * 3 for w in edge_weights],  # Scale line width by weight
+            color=edge_weights,                   # Use weight to determine line color
+            colorscale='Viridis',                 # A nice color scale for the lines
+            showscale=True,
+            colorbar=dict(
+                thickness=15,
+                title='Connection Strength',
+                x=1.05
+            ),
+        ),
         hoverinfo='text',
         text=hover_text_edges,
         mode='lines'
@@ -559,17 +570,11 @@ def create_network_chart(scores_normalized, connections):
         text=DIMENSIONS,
         textposition="bottom center",
         marker=dict(
-            showscale=True,
+            showscale=False, # We'll just show one color scale for the lines
             colorscale='Viridis',
             reversescale=True,
             color=node_scores,
             size=node_sizes,
-            colorbar=dict(
-                thickness=15,
-                title=dict(text='Score', side='right'),
-                tickvals=[1, 2, 3, 4, 5],
-                ticktext=['1', '2', '3', '4', '5'],
-            ),
             line_width=2
         ),
         textfont=dict(size=10)
