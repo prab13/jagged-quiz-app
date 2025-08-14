@@ -330,6 +330,223 @@ QUESTIONS_DATA = [
 # A set of all unique dimensions for initialization
 DIMENSIONS = sorted(list(set([q["primary_dimension"] for q in QUESTIONS_DATA] + [dim for q in QUESTIONS_DATA for dim in q["secondary_weights"]])))
 
+# --- Data for Learning and Career Paths ---
+# A dictionary to map each dimension to relevant career and learning paths.
+# The content is tailored for teenagers, focusing on relatable concepts and future potential.
+LEARNING_PATHS_AND_CAREERS = {
+    "Nature & Environment": {
+        "learning": [
+            "Join a nature club or a gardening group. 🌱",
+            "Start a mini-project on recycling or composting at home. ♻️",
+            "Learn about different animal or plant species in your local area. 🌲",
+            "Watch documentaries about climate change and ecosystems. 🌍",
+        ],
+        "careers": [
+            "**Marine Biologist:** Studying sea life and ocean ecosystems.",
+            "**Environmental Scientist:** Finding solutions to pollution and climate issues.",
+            "**Urban Planner:** Designing sustainable cities with parks and green spaces.",
+            "**Park Ranger:** Protecting and managing natural parks and wildlife."
+        ]
+    },
+    "Numbers & Logic": {
+        "learning": [
+            "Try solving logic puzzles like Sudoku or nonograms. 🧩",
+            "Learn a basic coding language like Python to solve math problems. 🐍",
+            "Play strategy games like chess or Go. ♟️",
+            "Take online courses in basic statistics or data analysis. 📊",
+        ],
+        "careers": [
+            "**Software Engineer:** Building apps and websites using code.",
+            "**Data Scientist:** Finding patterns in data to make important discoveries.",
+            "**Financial Analyst:** Helping people and companies manage their money.",
+            "**Game Designer:** Using logic and strategy to create video games."
+        ]
+    },
+    "Words & Communication": {
+        "learning": [
+            "Start a blog or a YouTube channel about a topic you love. ✍️",
+            "Join a debate club or a school newspaper. 🗣️",
+            "Read different genres of books and try to write a review. 📚",
+            "Practice public speaking by giving presentations to friends or family. 🎤",
+        ],
+        "careers": [
+            "**Journalist:** Writing stories and reporting on news for a living.",
+            "**Marketing Specialist:** Creating messages that get people excited about products.",
+            "**Author:** Writing books and creating new worlds.",
+            "**Lawyer:** Using powerful words to argue cases and help people."
+        ]
+    },
+    "People & Community": {
+        "learning": [
+            "Volunteer for a local charity or community event. ❤️",
+            "Organize a study group or a social club with your friends. 🤝",
+            "Practice being an active listener by paying close attention to others. 👂",
+            "Read books about psychology and social dynamics. 🧑‍🤝‍🧑",
+        ],
+        "careers": [
+            "**Teacher:** Helping students learn and grow in a classroom.",
+            "**Social Worker:** Supporting families and individuals in need.",
+            "**Human Resources Manager:** Helping people find great jobs and feel happy at work.",
+            "**Community Organizer:** Bringing people together to solve local problems."
+        ]
+    },
+    "Making & Building": {
+        "learning": [
+            "Learn to build things with LEGO, wood, or other materials. 🧱",
+            "Take a workshop on robotics or electronics. 🤖",
+            "Fix something broken around the house, like a chair or a bike. 🛠️",
+            "Watch tutorials on how things are made or designed. 🏗️",
+        ],
+        "careers": [
+            "**Architect:** Designing buildings and structures.",
+            "**Engineer:** Creating new machines, gadgets, and systems.",
+            "**Web Developer:** Building the visual and functional parts of websites.",
+            "**Product Designer:** Inventing and improving everyday products."
+        ]
+    },
+    "Movement & Health": {
+        "learning": [
+            "Try a new sport or dance class. 🤸",
+            "Learn about nutrition and how to make healthy snacks. 🍎",
+            "Set a fitness goal and track your progress. 🏃",
+            "Explore mindfulness or yoga to connect with your body. 🧘",
+        ],
+        "careers": [
+            "**Physical Therapist:** Helping people recover from injuries.",
+            "**Personal Trainer:** Guiding others to reach their fitness goals.",
+            "**Sports Coach:** Mentoring athletes and developing team strategies.",
+            "**Doctor/Nurse:** Working in healthcare to help people stay healthy."
+        ]
+    },
+    "Arts & Creativity": {
+        "learning": [
+            "Start drawing, painting, or sculpting. 🎨",
+            "Write songs or learn to play a musical instrument. 🎸",
+            "Explore graphic design by creating posters or logos. ✍️",
+            "Try acting in a school play or making your own short films. 🎬",
+        ],
+        "careers": [
+            "**Graphic Designer:** Creating visual concepts for brands and media.",
+            "**Animator:** Bringing characters and stories to life.",
+            "**Musician/Composer:** Creating music and performing.",
+            "**Fashion Designer:** Creating new styles of clothing."
+        ]
+    },
+    "Technology & Innovation": {
+        "learning": [
+            "Join a coding club or robotics team. 💻",
+            "Learn to use new software or apps for creative projects. 📲",
+            "Try building a simple website or an app. 🌐",
+            "Research and experiment with AI or virtual reality tools. 🤖",
+        ],
+        "careers": [
+            "**Cybersecurity Specialist:** Protecting computer systems from hackers.",
+            "**AI Developer:** Creating intelligent programs and robots.",
+            "**UX/UI Designer:** Making websites and apps easy and fun to use.",
+            "**Data Analyst:** Finding valuable insights from large sets of data."
+        ]
+    },
+    "Entrepreneurship & Initiative": {
+        "learning": [
+            "Start a small business like a lemonade stand or a dog-walking service. 💰",
+            "Organize a fundraising event for a cause you care about. 📈",
+            "Brainstorm ideas for products or services that could solve problems. 💡",
+            "Read about famous innovators and their stories. 🚀",
+        ],
+        "careers": [
+            "**Entrepreneur:** Starting and growing your own company.",
+            "**Project Manager:** Leading teams to complete projects on time.",
+            "**Startup Founder:** Turning a new idea into a successful business.",
+            "**Venture Capitalist:** Investing in new and exciting companies."
+        ]
+    },
+    "Critical & Reflective Thinking": {
+        "learning": [
+            "Debate a topic with friends, trying to see both sides. 🤔",
+            "Keep a journal to reflect on your decisions and experiences. 📝",
+            "Read non-fiction books about philosophy or history. 📖",
+            "Research and analyze a topic you are curious about and share what you learned. 🧐",
+        ],
+        "careers": [
+            "**Scientist:** Asking big questions and designing experiments to find answers.",
+            "**Researcher:** Investigating topics to discover new knowledge.",
+            "**Policy Analyst:** Advising leaders on important decisions.",
+            "**Forensic Scientist:** Using critical thinking to solve crimes."
+        ]
+    },
+    "Emotional & Social Intelligence": {
+        "learning": [
+            "Practice empathy by listening to a friend's problems without judgment. 🤗",
+            "Volunteer as a mentor for younger students. 🤝",
+            "Read books or watch videos on communication and body language. 🗣️",
+            "Write down your feelings and try to understand why you feel that way. 🥰",
+        ],
+        "careers": [
+            "**Psychologist:** Helping people understand and manage their emotions.",
+            "**Counselor:** Guiding others through difficult life situations.",
+            "**Humanitarian Worker:** Providing aid and support to people in crisis.",
+            "**Diplomat:** Representing a country and building relationships with other nations."
+        ]
+    },
+    "Digital Media & Creativity": {
+        "learning": [
+            "Learn a new software like Photoshop or a video editor. 💻",
+            "Create a short film or a podcast with your friends. 🎬",
+            "Experiment with digital art, music, or animation. 🎨",
+            "Design social media graphics for a school event or club. 📸",
+        ],
+        "careers": [
+            "**YouTuber/Content Creator:** Making videos and building a community online.",
+            "**Animator:** Bringing characters and stories to life with technology.",
+            "**Digital Marketing Manager:** Promoting brands through social media and online ads.",
+            "**Video Game Artist:** Creating the visuals for video games."
+        ]
+    },
+    "Scientific Curiosity": {
+        "learning": [
+            "Do simple science experiments at home. 🧪",
+            "Visit a science museum or a planetarium. 🔭",
+            "Read articles or books about new scientific discoveries. 🔬",
+            "Learn about the stars and planets with an app or a telescope. 🌌",
+        ],
+        "careers": [
+            "**Biologist:** Studying living organisms and their environments.",
+            "**Chemist:** Working with chemicals to create new medicines or materials.",
+            "**Astronomer:** Studying stars, planets, and galaxies.",
+            "**Geologist:** Exploring the Earth's rocks and natural formations."
+        ]
+    },
+    "Collaborative & Leadership Skills": {
+        "learning": [
+            "Lead a group project at school or in a club. 🤝",
+            "Organize a team for a school sport or a community event. 🏆",
+            "Read books or articles about famous leaders and their styles. 🗺️",
+            "Practice giving constructive feedback to others. 🗣️",
+        ],
+        "careers": [
+            "**CEO/Manager:** Leading a company or a team.",
+            "**Team Coach:** Guiding a sports team to victory.",
+            "**Military Officer:** Leading a team with discipline and strategy.",
+            "**Non-profit Director:** Running an organization that helps others."
+        ]
+    },
+    "Mindfulness & Wellbeing": {
+        "learning": [
+            "Try meditation or deep breathing exercises. 🧘",
+            "Keep a gratitude journal to focus on positive things. 🙏",
+            "Learn about stress management techniques and self-care. 🥰",
+            "Practice setting healthy boundaries with your friends and family. ⚖️",
+        ],
+        "careers": [
+            "**Therapist:** Helping people improve their mental health.",
+            "**Yoga Instructor:** Teaching others to connect with their body and mind.",
+            "**Health Coach:** Guiding people to live healthier lifestyles.",
+            "**Wellness Consultant:** Advising companies on how to support their employees' wellbeing."
+        ]
+    },
+}
+
+
 # --- 2. Session state management ---
 # Initialize session state variables on first run
 if "page" not in st.session_state:
@@ -460,11 +677,28 @@ def show_results():
     st.dataframe(score_df.style.format({"Score": "{:.2f}"}), use_container_width=True)
 
     # --- Top Strengths Summary ---
-    st.subheader("Top Strengths")
+    st.subheader("Top Strengths & Career Paths 🚀")
     top_dims = score_df.head(3)
-    st.write("Based on your responses, your top three strengths are:")
+    st.write("Based on your responses, here are your top three strengths and some ways you can explore them:")
+
+    # Display suggestions for each of the top dimensions
     for _, row in top_dims.iterrows():
-        st.write(f"- **{row['Dimension']}** (Score: {row['Score']:.2f})")
+        dimension = row['Dimension']
+        score = row['Score']
+        st.markdown(f"#### **{dimension}** (Score: {score:.2f})")
+
+        # Use an expander to make the content collapsible
+        with st.expander("💡 Learning Paths & Activities"):
+            st.markdown("Here are some things you can do right now to explore this area:")
+            paths = LEARNING_PATHS_AND_CAREERS.get(dimension, {}).get("learning", [])
+            for path in paths:
+                st.markdown(f"- {path}")
+
+        with st.expander("💼 Potential Career Paths"):
+            st.markdown("Your strengths in this area could lead to a career as a:")
+            careers = LEARNING_PATHS_AND_CAREERS.get(dimension, {}).get("careers", [])
+            for career in careers:
+                st.markdown(f"- {career}")
 
     st.markdown("---")
     if st.button("Restart Quiz"):
