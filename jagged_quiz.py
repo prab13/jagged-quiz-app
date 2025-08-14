@@ -335,210 +335,6 @@ QUESTIONS_DATA = [
 # A set of all unique dimensions for initialization
 DIMENSIONS = sorted(list(set([q["primary_dimension"] for q in QUESTIONS_DATA] + [dim for q in QUESTIONS_DATA for dim in q["secondary_weights"]])))
 
-# --- Data for Learning and Career Paths ---
-# A dictionary to map each dimension to relevant career and learning paths.
-# The content is tailored for teenagers, focusing on relatable concepts and future potential.
-LEARNING_PATHS_AND_CAREERS = {
-    "Nature & Environment": {
-        "learning": [
-            "Explore subjects like **Biology**, **Environmental Science**, or **Geology**.",
-            "Research topics like **sustainable agriculture**, **conservation**, and **climate science**.",
-            "Focus on understanding ecosystems, animal behavior, and the relationship between living things and their environment.",
-        ],
-        "careers": [
-            "**Marine Biologist:** Studying sea life and ocean ecosystems.",
-            "**Environmental Scientist:** Finding solutions to pollution and climate issues.",
-            "**Urban Planner:** Designing sustainable cities with parks and green spaces.",
-            "**Park Ranger:** Protecting and managing natural parks and wildlife."
-        ]
-    },
-    "Numbers & Logic": {
-        "learning": [
-            "Dive into **Advanced Mathematics**, **Statistics**, or **Formal Logic**.",
-            "Learn **Computer Science** and **Algorithmic Thinking** to solve complex problems.",
-            "Study **data analysis** and how to use data to spot trends and make informed decisions.",
-        ],
-        "careers": [
-            "**Software Engineer:** Building apps and websites using code.",
-            "**Data Scientist:** Finding patterns in data to make important discoveries.",
-            "**Financial Analyst:** Helping people and companies manage their money.",
-            "**Game Designer:** Using logic and strategy to create video games."
-        ]
-    },
-    "Words & Communication": {
-        "learning": [
-            "Focus on **English Literature**, **Rhetoric**, and **Creative Writing** to improve your skills.",
-            "Study **Journalism** and **Media Studies** to understand how to share ideas with a wider audience.",
-            "Take courses in **public speaking** or **debate** to hone your persuasive skills.",
-        ],
-        "careers": [
-            "**Journalist:** Writing stories and reporting on news for a living.",
-            "**Marketing Specialist:** Creating messages that get people excited about products.",
-            "**Author:** Writing books and creating new worlds.",
-            "**Lawyer:** Using powerful words to argue cases and help people."
-        ]
-    },
-    "People & Community": {
-        "learning": [
-            "Explore subjects like **Sociology**, **Psychology**, and **Social Studies** to understand human behavior.",
-            "Learn about **Community Development** and **Public Policy**.",
-            "Focus on topics like **conflict resolution**, **group dynamics**, and **cultural diversity**.",
-        ],
-        "careers": [
-            "**Teacher:** Helping students learn and grow in a classroom.",
-            "**Social Worker:** Supporting families and individuals in need.",
-            "**Human Resources Manager:** Helping people find great jobs and feel happy at work.",
-            "**Community Organizer:** Bringing people together to solve local problems."
-        ]
-    },
-    "Making & Building": {
-        "learning": [
-            "Explore subjects in **Engineering** (mechanical, civil, electrical) and **Physics**.",
-            "Learn about **Industrial Design** and **Architecture**.",
-            "Focus on hands-on skills like **woodworking**, **robotics**, or **3D modeling**.",
-        ],
-        "careers": [
-            "**Architect:** Designing buildings and structures.",
-            "**Engineer:** Creating new machines, gadgets, and systems.",
-            "**Web Developer:** Building the visual and functional parts of websites.",
-            "**Product Designer:** Inventing and improving everyday products."
-        ]
-    },
-    "Movement & Health": {
-        "learning": [
-            "Study **Anatomy**, **Physiology**, and **Kinesiology** to understand the human body.",
-            "Learn about **Nutrition Science** and how it impacts health.",
-            "Explore **Sports Medicine** and **Exercise Science**.",
-        ],
-        "careers": [
-            "**Physical Therapist:** Helping people recover from injuries.",
-            "**Personal Trainer:** Guiding others to reach their fitness goals.",
-            "**Sports Coach:** Mentoring athletes and developing team strategies.",
-            "**Doctor/Nurse:** Working in healthcare to help people stay healthy."
-        ]
-    },
-    "Arts & Creativity": {
-        "learning": [
-            "Study **Art History**, **Visual Arts**, and **Creative Expression**.",
-            "Learn **Music Theory** or **Film Studies**.",
-            "Take classes in **graphic design**, **drawing**, or **sculpture** to develop your skills.",
-        ],
-        "careers": [
-            "**Graphic Designer:** Creating visual concepts for brands and media.",
-            "**Animator:** Bringing characters and stories to life.",
-            "**Musician/Composer:** Creating music and performing.",
-            "**Fashion Designer:** Creating new styles of clothing."
-        ]
-    },
-    "Technology & Innovation": {
-        "learning": [
-            "Explore **Computer Programming** in languages like Python or JavaScript.",
-            "Study **AI and Machine Learning** or **Cybersecurity**.",
-            "Learn about **User Experience (UX) Design** and **Data Science**.",
-        ],
-        "careers": [
-            "**Cybersecurity Specialist:** Protecting computer systems from hackers.",
-            "**AI Developer:** Creating intelligent programs and robots.",
-            "**UX/UI Designer:** Making websites and apps easy and fun to use.",
-            "**Data Analyst:** Finding valuable insights from large sets of data."
-        ]
-    },
-    "Entrepreneurship & Initiative": {
-        "learning": [
-            "Take classes in **Business Studies**, **Economics**, or **Marketing**.",
-            "Study **Project Management** and **Strategic Planning**.",
-            "Learn about **Finance** and the principles of building and managing a business.",
-        ],
-        "careers": [
-            "**Entrepreneur:** Starting and growing your own company.",
-            "**Project Manager:** Leading teams to complete projects on time.",
-            "**Startup Founder:** Turning a new idea into a successful business.",
-            "**Venture Capitalist:** Investing in new and exciting companies."
-        ]
-    },
-    "Critical & Reflective Thinking": {
-        "learning": [
-            "Engage with **Philosophy**, **Ethics**, and **Formal Logic**.",
-            "Study **History** and **Research Methods** to analyze past events and information.",
-            "Practice writing **essays** and **analytical papers** to develop your reasoning.",
-        ],
-        "careers": [
-            "**Scientist:** Asking big questions and designing experiments to find answers.",
-            "**Researcher:** Investigating topics to discover new knowledge.",
-            "**Policy Analyst:** Advising leaders on important decisions.",
-            "**Forensic Scientist:** Using critical thinking to solve crimes."
-        ]
-    },
-    "Emotional & Social Intelligence": {
-        "learning": [
-            "Study **Psychology**, **Sociology**, and **Communication Studies**.",
-            "Learn about **Neuroscience** and how emotions are processed in the brain.",
-            "Explore **Counseling** and **Social Work** to understand how to help others.",
-        ],
-        "careers": [
-            "**Psychologist:** Helping people understand and manage their emotions.",
-            "**Counselor:** Guiding others through difficult life situations.",
-            "**Humanitarian Worker:** Providing aid and support to people in crisis.",
-            "**Diplomat:** Representing a country and building relationships with other nations."
-        ]
-    },
-    "Digital Media & Creativity": {
-        "learning": [
-            "Take courses in **Digital Arts**, **Multimedia Production**, and **Animation**.",
-            "Learn about **User Experience (UX) Design** and **Interactive Media**.",
-            "Focus on subjects like **Film Production**, **Audio Engineering** and **Graphic Design**.",
-        ],
-        "careers": [
-            "**YouTuber/Content Creator:** Making videos and building a community online.",
-            "**Animator:** Bringing characters and stories to life with technology.",
-            "**Digital Marketing Manager:** Promoting brands through social media and online ads.",
-            "**Video Game Artist:** Creating the visuals for video games."
-        ]
-    },
-    "Scientific Curiosity": {
-        "learning": [
-            "Explore **Biology**, **Chemistry**, and **Physics** to understand the natural world.",
-            "Study **Astronomy** and **Cosmology** to learn about the universe.",
-            "Learn about **scientific methods**, **experimental design**, and **data interpretation**.",
-        ],
-        "careers": [
-            "**Biologist:** Studying living organisms and their environments.",
-            "**Chemist:** Working with chemicals to create new medicines or materials.",
-            "**Astronomer:** Studying stars, planets, and galaxies.",
-            "**Geologist:** Exploring the Earth's rocks and natural formations."
-        ]
-    },
-    "Collaborative & Leadership Skills": {
-        "learning": [
-            "Take courses in **Organizational Behavior** and **Strategic Planning**.",
-            "Study **Public Administration** and the role of leadership in community settings.",
-            "Learn about **project management** and **effective communication** in a team environment.",
-        ],
-        "careers": [
-            "**CEO/Manager:** Leading a company or a team.",
-            "**Team Coach:** Guiding a sports team to victory.",
-            "**Military Officer:** Leading a team with discipline and strategy.",
-            "**Non-profit Director:** Running an organization that helps others."
-        ]
-    },
-    "Mindfulness & Wellbeing": {
-        "learning": [
-            "Study **Psychology**, with a focus on **positive psychology** and **cognitive behavioral therapy**.",
-            "Explore **Neuroscience** to understand how the brain and body connect.",
-            "Learn about **Health Sciences** and **Behavioral Studies**.",
-        ],
-        "careers": [
-            "**Therapist:** Helping people improve their mental health.",
-            "**Yoga Instructor:** Teaching others to connect with their body and mind.",
-            "**Health Coach:** Guiding people to live healthier lifestyles.",
-            "**Wellness Consultant:** Advising companies on how to support their employees' wellbeing."
-        ]
-    },
-}
-
-# A set of all unique dimensions for initialization
-DIMENSIONS = sorted(list(set([q["primary_dimension"] for q in QUESTIONS_DATA] + [dim for q in QUESTIONS_DATA for dim in q["secondary_weights"]])))
-
 # --- 2. Session state management ---
 # Initialize session state variables on first run
 if "page" not in st.session_state:
@@ -636,7 +432,7 @@ def show_quiz():
             if st.button("Submit Quiz", type="primary", disabled=not has_answered):
                 st.session_state.page = "results"
                 st.rerun()
-                
+
 def create_network_chart(scores_normalized, connections):
     """
     Creates an interactive network diagram of all dimensions.
@@ -692,7 +488,7 @@ def create_network_chart(scores_normalized, connections):
     node_trace = go.Scatter(
         x=node_x, y=node_y,
         mode='markers+text',
-        hoverinfo='text',
+        hovertemplate=node_text,
         text=DIMENSIONS,
         textposition="bottom center",
         marker=dict(
@@ -703,9 +499,9 @@ def create_network_chart(scores_normalized, connections):
             size=node_sizes,
             colorbar=dict(
                 thickness=15,
-                title='Score',
-                xanchor='left',
-                titleside='right'
+                title=dict(text='Score', side='right'),
+                tickvals=[1, 2, 3, 4, 5],
+                ticktext=['1', '2', '3', '4', '5'],
             ),
             line_width=2
         ),
