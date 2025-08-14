@@ -364,8 +364,9 @@ def show_results():
     """Calculates scores and displays the results page with a radar chart and table."""
     st.title("Your Jagged Learning Profile")
 
-    # Initialize scores for all dimensions to zero
+    # Initialize scores and maximum possible scores for all dimensions to zero
     scores = {dim: 0 for dim in DIMENSIONS}
+    max_scores = {dim: 0 for dim in DIMENSIONS}
 
     # Calculate scores based on the responses to the randomized questions
     for q_data in st.session_state.randomized_questions:
@@ -378,15 +379,18 @@ def show_results():
 
         # Apply scoring for primary dimension
         scores[primary_dim] += response
+        max_scores[primary_dim] += 5
 
         # Apply scoring for secondary dimensions
         for sec_dim, weight in secondary_weights.items():
             scores[sec_dim] += response * weight
+            max_scores[sec_dim] += 5 * weight
 
-    # This normalization is a simplified version and may produce scores above 5.
+    # Normalize scores by dividing the raw score by the maximum possible score for that dimension,
+    # then scaling the result to be between 1 and 5. This prevents scores from exceeding 5.
     scores_normalized = {
-        dim: scores[dim] / 10
-        for dim in DIMENSIONS
+        dim: (scores[dim] / max_scores[dim]) * 5
+        for dim in DIMENSIONS if max_scores[dim] > 0
     }
 
     # --- Plotly Radar Chart ---
