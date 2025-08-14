@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import random
 import plotly.graph_objects as go
+import numpy as np
 
 st.set_page_config(page_title="Jagged Learning Profile Quiz", layout="wide")
 
@@ -11,7 +12,7 @@ st.set_page_config(page_title="Jagged Learning Profile Quiz", layout="wide")
 # 1. Define questions with weights
 # -----------------------------
 questions_data = [
-    # Format: (question_text, primary_dimension, {secondary_dimension: weight})
+    # (question_text, primary_dimension, {secondary_dimension: weight})
     # Nature & Environment
     ("I enjoy observing animals, plants, or natural environments.", "Nature & Environment", {"Scientific Curiosity": 0.4}),
     ("I am curious about how ecosystems and the Earth work.", "Nature & Environment", {"Scientific Curiosity": 0.4}),
@@ -89,7 +90,6 @@ questions_data = [
     ("I take time to think about my strengths and areas I want to improve.", "Mindfulness & Wellbeing", {"Critical & Reflective Thinking": 0.4}),
 ]
 
-# List of all dimensions
 dimensions = [
     "Nature & Environment", "Numbers & Logic", "Words & Communication", "People & Community",
     "Making & Building", "Movement & Health", "Arts & Creativity", "Technology & Innovation",
@@ -99,64 +99,88 @@ dimensions = [
 ]
 
 # -----------------------------
-# 2. Streamlit quiz page
+# 2. Session state
 # -----------------------------
 if "page" not in st.session_state:
     st.session_state.page = "quiz"
     st.session_state.responses = {}
 
+# -----------------------------
+# 3. Quiz page with progress
+# -----------------------------
 def show_quiz():
     st.title("Jagged Learning Profile Quiz")
     st.write("Select the option that best describes you for each statement (1 = Disagree, 5 = Strongly Agree).")
 
-    # Randomize questions
     randomized_questions = questions_data.copy()
     random.shuffle(randomized_questions)
+
+    answered_count = sum([
+        1 for idx in range(len(randomized_questions))
+        if f"q_{idx}" in st.session_state.responses and st.session_state.responses[f"q_{idx}"]
+    ])
+    total_questions = len(randomized_questions)
+
+    st.write(f"Progress: {answered_count}/{total_questions} ({int(answered_count / total_questions * 100)}%)")
+    st.progress(answered_count / total_questions)
 
     for idx, (question, _, _) in enumerate(randomized_questions):
         key = f"q_{idx}"
         st.session_state.responses[key] = st.radio(
-            question, options=[1,2,3,4,5],
-            index=st.session_state.responses.get(key, 0)-1 if st.session_state.responses.get(key) else 2,
+            question, options=[1, 2, 3, 4, 5],
+            index=st.session_state.responses.get(key, 3) - 1 if st.session_state.responses.get(key) else 2,
             key=key
         )
 
     if st.button("Submit Quiz"):
         st.session_state.page = "results"
 
+# -----------------------------
+# 4. Results page with radar + heatmap
+# -----------------------------
 def show_results():
     st.title("Your Jagged Learning Profile")
 
-    # Initialize scores
+    # Initialize scores and overlap matrix
     scores = {dim: 0 for dim in dimensions}
+    overlap_matrix = pd.DataFrame(0, index=dimensions, columns=dimensions)
 
-    # Apply weighted scoring
     for idx, (question, primary, secondary_dict) in enumerate(questions_data):
         key = f"q_{idx}"
         response = st.session_state.responses.get(key, 3)
-        scores[primary] += response  # primary full weight
+        scores[primary] += response
         for sec_dim, weight in secondary_dict.items():
             scores[sec_dim] += response * weight
+            overlap_matrix.loc[primary, sec_dim] += response * weight
 
-    # Normalize scores to average per dimension
-    max_per_dim = 4  # 4 questions per dimension
-    scores_normalized = {dim: scores[dim]/max_per_dim for dim in scores}
+    scores_normalized = {dim: scores[dim]/4 for dim in scores}  # normalize
 
     # Radar chart
-    fig = go.Figure()
-    fig.add_trace(go.Scatterpolar(
+    fig_radar = go.Figure()
+    fig_radar.add_trace(go.Scatterpolar(
         r=list(scores_normalized.values()),
         theta=list(scores_normalized.keys()),
         fill='toself',
         name='Learning Profile'
     ))
-    fig.update_layout(
+    fig_radar.update_layout(
         polar=dict(radialaxis=dict(visible=True, range=[0,5])),
         showlegend=False
     )
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig_radar, use_container_width=True)
 
-    # Optional: top 3 peak dimensions
+    # Heatmap of overlaps
+    fig_heat = go.Figure(data=go.Heatmap(
+        z=overlap_matrix.values,
+        x=overlap_matrix.columns,
+        y=overlap_matrix.index,
+        colorscale='Viridis',
+        colorbar=dict(title="Weighted Contribution")
+    ))
+    fig_heat.update_layout(title="Dimension Overlap Heatmap")
+    st.plotly_chart(fig_heat, use_container_width=True)
+
+    # Top 3 dimensions
     top_dims = sorted(scores_normalized.items(), key=lambda x: x[1], reverse=True)[:3]
     st.write("Your top 3 strengths may indicate potential areas for learning and development:")
     for dim, val in top_dims:
@@ -167,7 +191,7 @@ def show_results():
         st.session_state.responses = {}
 
 # -----------------------------
-# Page navigation
+# 5. Page navigation
 # -----------------------------
 if st.session_state.page == "quiz":
     show_quiz()
