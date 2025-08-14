@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import random
+import plotly.graph_objects as go
 
-st.title("Student Learning & Interest Quiz (12-16)")
+st.set_page_config(page_title="Student Learning & Interest Quiz", layout="wide")
 
 # --- Questions & Dimensions ---
 questions = [
@@ -62,38 +63,75 @@ career_suggestions = {
     "Technology & Innovation": "Computer Science, Robotics, UX/UI Design"
 }
 
-# --- Clear Responses Button ---
+# --- Initialize session state ---
 if "responses" not in st.session_state:
-    st.session_state.responses = [3]*32
+    st.session_state.responses = []
+if "shuffled_questions" not in st.session_state:
+    st.session_state.shuffled_questions = random.sample(questions, len(questions))
+if "page" not in st.session_state:
+    st.session_state.page = "quiz"
 
-if st.button("Clear All Responses"):
-    st.session_state.responses = [3]*32
+# --- Navigation ---
+def go_to_results():
+    st.session_state.page = "results"
 
-# --- Display Questions ---
-st.subheader("Please rate each statement (1 = Disagree, 5 = Strongly Agree)")
-for i, (q, _) in enumerate(questions):
-    st.session_state.responses[i] = st.slider(q, 1, 5, value=st.session_state.responses[i])
+def go_to_quiz():
+    st.session_state.page = "quiz"
+    st.session_state.responses = []
+    st.session_state.shuffled_questions = random.sample(questions, len(questions))
 
-# --- Calculate Scores ---
-scores = {dim:0 for dim in dimensions}
-for resp, (_, dim) in zip(st.session_state.responses, questions):
-    scores[dim] += resp
+# --- Quiz Page ---
+if st.session_state.page == "quiz":
+    st.title("Student Learning & Interest Quiz (12-16)")
+    st.subheader("Please rate each statement (1 = Disagree, 5 = Strongly Agree)")
+    
+    st.session_state.responses = []
+    for q_text, _ in st.session_state.shuffled_questions:
+        response = st.radio(q_text, [1,2,3,4,5], index=2, horizontal=True)
+        st.session_state.responses.append(response)
+    
+    st.button("Submit Quiz", on_click=go_to_results)
+    st.button("Clear All Responses", on_click=go_to_quiz)
 
-# --- Show Jagged Profile ---
-st.subheader("Jagged Profile")
-profile_df = pd.DataFrame({"Dimension": list(scores.keys()), "Score": list(scores.values())})
-st.dataframe(profile_df)
+# --- Results Page ---
+if st.session_state.page == "results":
+    st.title("Your Quiz Results")
+    
+    # Calculate scores
+    scores = {dim:0 for dim in dimensions}
+    for resp, (_, dim) in zip(st.session_state.responses, st.session_state.shuffled_questions):
+        scores[dim] += resp
+    
+    profile_df = pd.DataFrame({"Dimension": list(scores.keys()), "Score": list(scores.values())})
+    st.subheader("Jagged Profile")
+    st.dataframe(profile_df)
+    
+    # Radar chart with Plotly
+    categories = list(scores.keys())
+    values = list(scores.values())
+    values += values[:1]  # close the loop
 
-# --- Bar Chart ---
-fig, ax = plt.subplots(figsize=(8,5))
-ax.barh(profile_df["Dimension"], profile_df["Score"], color='skyblue')
-ax.set_xlim(0, 20)
-ax.set_xlabel("Score (Max 20)")
-ax.set_title("Jagged Profile")
-st.pyplot(fig)
-
-# --- Top Career Suggestions ---
-st.subheader("Top Suggested Areas of Study / Careers")
-top_dims = profile_df.sort_values("Score", ascending=False).head(3)["Dimension"].tolist()
-for dim in top_dims:
-    st.write(f"**{dim}:** {career_suggestions[dim]}")
+    fig = go.Figure()
+    fig.add_trace(go.Scatterpolar(
+        r=values,
+        theta=categories + [categories[0]],
+        fill='toself',
+        name='Score',
+        marker_color='skyblue'
+    ))
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(visible=True, range=[0,20], tickvals=[0,5,10,15,20])
+        ),
+        showlegend=False,
+        title="Jagged Profile Radar Chart"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Top careers
+    st.subheader("Top Suggested Areas of Study / Careers")
+    top_dims = profile_df.sort_values("Score", ascending=False).head(3)["Dimension"].tolist()
+    for dim in top_dims:
+        st.write(f"**{dim}:** {career_suggestions[dim]}")
+    
+    st.button("Take Quiz Again", on_click=go_to_quiz)
